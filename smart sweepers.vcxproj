@@ -144,6 +144,7 @@
     <ClCompile Include="CParams.cpp" />
     <ClCompile Include="CQLearningController.cpp" />
     <ClCompile Include="CTimer.cpp" />
+    <ClCompile Include="Node.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="CMinesweeper.cpp" />
     <ClCompile Include="utils.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="CQLearningController.h" />
     <ClInclude Include="CTimer.h" />
     <ClInclude Include="CMinesweeper.h" />
+    <ClInclude Include="Node.h" />
     <ClInclude Include="SVector2D.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

@@ -14,7 +14,9 @@
 #include <cstring>
 #include <stdio.h>
 #include <stdint.h>
-#include "HiddenNode.h"
+#include <iostream>
+#include <string>
+#include "Node.h"
 
 typedef unsigned int uint;
 class CBasicEA; //forward declare EA class, which will have the power to access weight vectors
@@ -28,8 +30,10 @@ private:
 	double learningRate;
 	double mseCutOff;
 	std::vector<std::vector<double>> desiredOutput;
-	std::vector<std::vector<double>> actualOuput;
-	std::vector<HiddenNode> hiddenNodes;
+	std::vector<std::vector<double>> actualOutput;
+	std::vector<Node> hiddenNodes;
+	std::vector<Node> outputNodes;
+	uint outputIndex = 0;
 protected:
 	void feedForward(const std::vector<double> & const inputs); //you may modify this to do std::vector<double> if you want
 	void propagateErrorBackward(const std::vector<double> & const desiredOutput); //you may modify this to do std::vector<double> if you want

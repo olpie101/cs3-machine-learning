@@ -68,9 +68,11 @@ void CBackPropController::InitializeLearningAlgorithm(void)
 			}
 		}
 		f.close();
+		printf("About to train");
 	//init the neural net and train it
 		_neuralnet = new CNeuralNet(no_inputs,no_hidden,no_out,learning_rate,mse_cutoff);
 		_neuralnet->train(inp,out,no_training_samples);
+		printf("About to clear");
 	//release the memory we alloced
 		for (uint32_t i = 0; i < no_training_samples; ++i){
 			inp[i].clear();
@@ -78,7 +80,8 @@ void CBackPropController::InitializeLearningAlgorithm(void)
 		}
 		inp.clear();
 		out.clear();
-
+		printf("cleared");
+		std::cout << no_inputs;
 
 }
 

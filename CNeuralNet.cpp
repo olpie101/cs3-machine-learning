@@ -24,9 +24,13 @@
 CNeuralNet::CNeuralNet(uint inputLayerSize, uint hiddenLayerSize, uint outputLayerSize, double lRate, double mse_cutoff):
 inputLayerSize(inputLayerSize), hiddenLayerSize(hiddenLayerSize), outputLayerSize(outputLayerSize), learningRate(lRate), mseCutOff(mse_cutoff)
 	//you probably want to use an initializer list here
-{
+{	
+	printf("inside neuro construct");
 	//TODO
-	hiddenNodes = std::vector<HiddenNode>(this->hiddenLayerSize);
+	
+	hiddenNodes.resize(this->hiddenLayerSize);
+	outputNodes.resize(this->outputLayerSize);
+	initWeights();
 }
 /**
  The destructor of the class. All allocated memory will be released here
@@ -39,6 +43,15 @@ CNeuralNet::~CNeuralNet() {
 */
 void CNeuralNet::initWeights(){
 	//TODO
+	for (int i = 0; i < hiddenNodes.size(); ++i){
+		hiddenNodes[i].resize(inputLayerSize);
+		hiddenNodes[i].resetWeights();
+	}
+
+	for (int i = 0; i < outputNodes.size(); ++i){
+		outputNodes[i].resize(hiddenLayerSize);
+		outputNodes[i].resetWeights();
+	}
 }
 /**
  This is the forward feeding part of back propagation.
@@ -51,6 +64,27 @@ void CNeuralNet::initWeights(){
 void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
 	  //TODO
 	//All hidden layer nodes output the same value to 2 output nodes
+
+	for (uint i = 0; i < hiddenNodes.size(); ++i){
+		for (uint j = 0; j < inputs.size(); ++j){
+			hiddenNodes[i].setInput(j, inputs[j]);
+		}
+		//std::cout << "inside feed forward1 " << i+1 << " => " << hiddenNodes[i].getOutput() << std::endl;
+	}
+
+	//std::cout << "onto output layer" << std::endl;
+
+	for (uint i = 0; i < outputNodes.size(); ++i){
+		for (uint j = 0; j < hiddenNodes.size(); ++j){
+			outputNodes[i].setInput(j, hiddenNodes[j].getOutput());
+		}
+
+		//outputNodes[i].printStats();
+		//std::cout << "inside feed forward2 " << i + 1 << " => " << outputNodes[i].getOutput() << std::endl;
+		//std::cout << "actualOutput[0]Size = " << actualOutput[outputIndex].size() << std::endl;
+		//TODO allocate space beforehand in the train method
+		actualOutput[outputIndex].push_back(outputNodes[i].getOutput());
+	}
 }
 /**
  This is the actual back propagation part of the back propagation algorithm
@@ -72,6 +106,37 @@ void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
 */
 void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desiredOutput){
 	//TODO
+	//std::cout << "in prop back dSize = " << desiredOutput.size() << std::endl;
+	for (int i = 0; i < desiredOutput.size(); ++i){
+		double deltaOutput = desiredOutput[i] - actualOutput[outputIndex][i];
+		outputNodes[i].signalErrror = deltaOutput*actualOutput[outputIndex][i] * (1 - actualOutput[outputIndex][i]);
+	}
+
+	double sum;
+	for (int i = 0; i < hiddenNodes.size(); ++i){
+		sum = 0;
+		for (int j = 0; j < outputNodes.size(); ++j){
+			sum += outputNodes[j].getWeight(i)*outputNodes[j].signalErrror;
+		}
+
+		hiddenNodes[i].signalErrror = hiddenNodes[i].getOutput()*(1 - hiddenNodes[i].getOutput())*sum;
+	}
+
+	//std::cout << "about to handle weights" << std::endl;
+
+	for (int i = 0; i < outputNodes.size(); ++i){
+		for (int j = 0; j < outputNodes[i].getNumberOfWeights(); j++){
+			outputNodes[i].deltaWeight = learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j);
+			outputNodes[i].adjustWeight(j, outputNodes[i].deltaWeight);
+		}
+	}
+
+	for (int i = 0; i < hiddenNodes.size(); ++i){
+		for (int j = 0; j < hiddenNodes[i].getNumberOfWeights(); j++){
+			hiddenNodes[i].deltaWeight = learningRate*hiddenNodes[i].signalErrror*hiddenNodes[i].getInput(j);
+			hiddenNodes[i].adjustWeight(j, hiddenNodes[i].deltaWeight);
+		}
+	}
 }
 /**
 This computes the mean squared error
@@ -85,7 +150,12 @@ double CNeuralNet::meanSquaredError(const std::vector<double> & const desiredOut
 		sum <- sum + err*err
 	return sum / outputLayerSize
 	*/
-	return 1;
+	double sum =0;
+	for (int i = 0; i < outputLayerSize; ++i){
+		double err = desiredOutput[i] - actualOutput[outputIndex][i];
+		sum += err*err;
+	}
+	return sum/outputLayerSize;
 }
 /**
 This trains the neural network according to the back propagation algorithm.
@@ -98,13 +168,28 @@ until the MSE becomes suitably small
 void CNeuralNet::train(std::vector<std::vector<double>>  const inputs,
 	std::vector<std::vector<double>> const outputs, uint trainingSetSize) {
 	//TODO
-	desiredOutput = std::vector<std::vector<double>>(trainingSetSize);
-	std::copy(outputs.begin(), outputs.end(), actualOuput.begin());
-	for (int i = 0; i < hiddenLayerSize; ++i){
-		std::cout << "hidden node" << i + 1;
-		hiddenNodes[i].printWeights();
+	outputIndex = 0;
+	printf("inside train\n");
+	desiredOutput.resize(trainingSetSize);
+	actualOutput.resize(trainingSetSize);
+	printf("resized\n");
+	std::copy(outputs.begin(), outputs.end(), desiredOutput.begin());
+	//do{
+	for (int k = 0; k < 1000; ++k){
+		//std::cout << "k = " << k << std::endl;
+		for (int i = 0; i < inputs.size(); ++i){
+			outputIndex = i;
+			feedForward(inputs[i]);
+			//std::cout << "fed forward" << std::endl;
+			propagateErrorBackward(desiredOutput[i]);
+		}
+		if (k%100 == 0)
+			std::cout << k << " mse for " << 0 << " => " << meanSquaredError(desiredOutput[0]);
+		std::string test;
+		std::getline(std::cin, test);
 	}
-	
+	//} while (meanSquaredError(desiredOutput[0]) > mseCutOff);
+	printf("leaving train\n");
 }
 /**
 Once our network is trained we can simply feed it some input though the feed forward
