@@ -147,6 +147,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="CMinesweeper.cpp" />
+    <ClCompile Include="Sigmoid.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +169,7 @@
     <ClInclude Include="CTimer.h" />
     <ClInclude Include="CMinesweeper.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="Sigmoid.h" />
     <ClInclude Include="SVector2D.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

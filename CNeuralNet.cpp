@@ -80,10 +80,11 @@ void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
 		}
 
 		//outputNodes[i].printStats();
-		//std::cout << "inside feed forward2 " << i + 1 << " => " << outputNodes[i].getOutput() << std::endl;
+		//std::cout << "inside feed forward2 " << i + 1 << " => " << actualOutput[outputIndex].size() << std::endl;
 		//std::cout << "actualOutput[0]Size = " << actualOutput[outputIndex].size() << std::endl;
 		//TODO allocate space beforehand in the train method
-		actualOutput[outputIndex].push_back(outputNodes[i].getOutput());
+		actualOutput[outputIndex][i] = outputNodes[i].getOutput();
+		//std::cout << "OI= " << outputIndex << ", output => " << actualOutput[outputIndex].back() << " vs " << outputNodes[i].getOutput() << std::endl;
 	}
 }
 /**
@@ -98,7 +99,7 @@ void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
  2. Compute the error at the hidden layer: sigmoid_d(hidden) * 
 	sum(weights_o_h * difference between expected output and computed output at output layer)
 	for each hidden layer node
- 3. Adjust the weights from the hidden to the output layer: learning rate * error at the output layer * error at the hidden layer
+ 3. Adjust the weights from the hidden to the output layer: learning rate * error at the output layer * hidden layer output value
     for each connection between the hidden and output layers
  4. Adjust the weights from the input to the hidden layer: learning rate * error at the hidden layer * input layer node value
     for each connection between the input and hidden layers
@@ -106,20 +107,39 @@ void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
 */
 void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desiredOutput){
 	//TODO
-	//std::cout << "in prop back dSize = " << desiredOutput.size() << std::endl;
+	/*std::cout << "d vs a => " << desiredOutput[0] << " vs " << actualOutput[outputIndex][0]
+		<< "\n\t" << desiredOutput[1] << " vs " << actualOutput[outputIndex][1] << std::endl;*/
 	for (int i = 0; i < desiredOutput.size(); ++i){
 		double deltaOutput = desiredOutput[i] - actualOutput[outputIndex][i];
-		outputNodes[i].signalErrror = deltaOutput*actualOutput[outputIndex][i] * (1 - actualOutput[outputIndex][i]);
+		outputNodes[i].signalErrror = deltaOutput*Sigmoid::SigmoidD(actualOutput[outputIndex][i]);
+		//std::cout << "ONSigErr" << i << " =" << outputNodes[i].signalErrror << std::endl;
 	}
 
+	//double sum;
+	//std::cout << "hidden layer size = " << hiddenNodes.size() << std::endl;
+	//for (int i = 0; i < hiddenNodes.size(); ++i){
+	//	sum = 0;
+	//	std::cout << "startin inner loop = " << outputNodes.size() << std::endl;
+	//	for (int j = 0; j < outputNodes.size(); ++j){
+	//		double deltaOutput = desiredOutput[j] - actualOutput[outputIndex][j];
+	//		sum += outputNodes[j].getWeight(i)*deltaOutput;
+	//	}
+	//	std::cout << "ending inner loop" << std::endl;
+
+	//	hiddenNodes[i].signalErrror = Sigmoid::SigmoidD(hiddenNodes[i].getOutput())*sum;
+	//	std::cout << "HNSigErr" << i << " =" << outputNodes[i].signalErrror << std::endl;
+	//}
+
 	double sum;
+	//std::cout << "hidden layer size = " << hiddenNodes.size() << std::endl;
 	for (int i = 0; i < hiddenNodes.size(); ++i){
 		sum = 0;
 		for (int j = 0; j < outputNodes.size(); ++j){
-			sum += outputNodes[j].getWeight(i)*outputNodes[j].signalErrror;
+			sum += outputNodes[j].getWeight(i)*(desiredOutput[j] - actualOutput[outputIndex][j]);
 		}
 
-		hiddenNodes[i].signalErrror = hiddenNodes[i].getOutput()*(1 - hiddenNodes[i].getOutput())*sum;
+		hiddenNodes[i].signalErrror = Sigmoid::SigmoidD(hiddenNodes[i].getOutput());
+		//std::cout << "HNSigErr" << i << " =" << hiddenNodes[i].signalErrror << std::endl;
 	}
 
 	//std::cout << "about to handle weights" << std::endl;
@@ -127,7 +147,9 @@ void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desire
 	for (int i = 0; i < outputNodes.size(); ++i){
 		for (int j = 0; j < outputNodes[i].getNumberOfWeights(); j++){
 			outputNodes[i].deltaWeight = learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j);
+			//std::cout << "out weight (" << i << "," << j << ") was " << outputNodes[i].getWeight(j);
 			outputNodes[i].adjustWeight(j, outputNodes[i].deltaWeight);
+			//std::cout << " => now " << outputNodes[i].getWeight(j) << std::endl;
 		}
 	}
 
@@ -152,9 +174,11 @@ double CNeuralNet::meanSquaredError(const std::vector<double> & const desiredOut
 	*/
 	double sum =0;
 	for (int i = 0; i < outputLayerSize; ++i){
-		double err = desiredOutput[i] - actualOutput[outputIndex][i];
+		double err = desiredOutput[i] - actualOutput[0][i];
+		//std::cout << "mse" << outputIndex << "-" << i << " => " << desiredOutput[i] << "-" << actualOutput[outputIndex][i] << "=" << err << std::endl;
 		sum += err*err;
 	}
+	std::cout << "mse" << outputIndex << " => " << sum / outputLayerSize << std::endl;
 	return sum/outputLayerSize;
 }
 /**
@@ -172,10 +196,14 @@ void CNeuralNet::train(std::vector<std::vector<double>>  const inputs,
 	printf("inside train\n");
 	desiredOutput.resize(trainingSetSize);
 	actualOutput.resize(trainingSetSize);
-	printf("resized\n");
 	std::copy(outputs.begin(), outputs.end(), desiredOutput.begin());
+	for (int i = 0; i < actualOutput.size(); ++i){
+		actualOutput[i].resize(desiredOutput[0].size());
+	}
+	printf("resized\n");
+	
 	//do{
-	for (int k = 0; k < 1000; ++k){
+	for (int k = 0; k < 50; ++k){
 		//std::cout << "k = " << k << std::endl;
 		for (int i = 0; i < inputs.size(); ++i){
 			outputIndex = i;
@@ -183,17 +211,19 @@ void CNeuralNet::train(std::vector<std::vector<double>>  const inputs,
 			//std::cout << "fed forward" << std::endl;
 			propagateErrorBackward(desiredOutput[i]);
 		}
-		if (k%100 == 0)
-			std::cout << k << " mse for " << 0 << " => " << meanSquaredError(desiredOutput[0]);
-		std::string test;
-		std::getline(std::cin, test);
+		outputIndex = 0;
+		meanSquaredError(desiredOutput[0]);
+		//if (k%100 == 0)
+			//std::cout << k << " mse for " << 0 << " => " << meanSquaredError(desiredOutput[0]);
+		/*std::string test;
+		std::getline(std::cin, test);*/
 	}
 	//} while (meanSquaredError(desiredOutput[0]) > mseCutOff);
 	printf("leaving train\n");
 }
 /**
 Once our network is trained we can simply feed it some input though the feed forward
-method and take the maximum value as the classification
+method and take the maximum index value as the classification
 */
 uint CNeuralNet::classify(const std::vector<double> & const input){
 	return 1; //TODO: fix me

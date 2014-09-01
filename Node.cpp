@@ -67,8 +67,7 @@ double Node::calculateOutput(){
 		net += inputs[i] * weights[i];
 	}
 	net += bias;
-	net *= -1;
-	output = 1 / (1 + exp(net));
+	output = Sigmoid::SigmoidFunc(net);
 	dataChanged = false;
 	return  output;
 }
@@ -89,7 +88,9 @@ double Node::getWeight(uint index){
 }
 
 void Node::adjustWeight(uint index, double value){
+	//std::cout << "weight " << index << " before = " << weights[index] << std::endl;
 	weights[index] += value;
+	//std::cout << "weight " << index << " after = " << weights[index] << std::endl;
 }
 
 uint Node::getNumberOfWeights(){

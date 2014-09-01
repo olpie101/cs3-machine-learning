@@ -6,6 +6,7 @@
 #include <random>
 #include <chrono>
 #include <math.h>
+#include "Sigmoid.h"
 
 typedef unsigned int uint;
 typedef std::chrono::high_resolution_clock myclock;
