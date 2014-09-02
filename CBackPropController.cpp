@@ -59,7 +59,10 @@ void CBackPropController::InitializeLearningAlgorithm(void)
 			out[i] = std::vector<double>(no_out);;
 		}
 		for (uint32_t i = 0; i < no_training_samples; ++i){
-			printf("Reading file ... %f%%\n",i / float(no_training_samples)*100.0);
+			//std::cout << int(i / float(no_training_samples) * 100) % 25 << std::endl;
+			if (int(i/float(no_training_samples)*100)%25 == 0){
+				printf("Reading file ... %f%%\n", i / float(no_training_samples)*100.0);
+			}
 			for (uint32_t inp_s = 0; inp_s < no_inputs; ++inp_s){
 				f >> inp[i][inp_s];
 			}

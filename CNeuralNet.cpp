@@ -25,7 +25,7 @@ CNeuralNet::CNeuralNet(uint inputLayerSize, uint hiddenLayerSize, uint outputLay
 inputLayerSize(inputLayerSize), hiddenLayerSize(hiddenLayerSize), outputLayerSize(outputLayerSize), learningRate(lRate), mseCutOff(mse_cutoff)
 	//you probably want to use an initializer list here
 {	
-	printf("inside neuro construct");
+	std::cout << "inside neuro construct, LR= " << learningRate << std::endl;
 	//TODO
 	
 	hiddenNodes.resize(this->hiddenLayerSize);
@@ -115,21 +115,6 @@ void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desire
 		//std::cout << "ONSigErr" << i << " =" << outputNodes[i].signalErrror << std::endl;
 	}
 
-	//double sum;
-	//std::cout << "hidden layer size = " << hiddenNodes.size() << std::endl;
-	//for (int i = 0; i < hiddenNodes.size(); ++i){
-	//	sum = 0;
-	//	std::cout << "startin inner loop = " << outputNodes.size() << std::endl;
-	//	for (int j = 0; j < outputNodes.size(); ++j){
-	//		double deltaOutput = desiredOutput[j] - actualOutput[outputIndex][j];
-	//		sum += outputNodes[j].getWeight(i)*deltaOutput;
-	//	}
-	//	std::cout << "ending inner loop" << std::endl;
-
-	//	hiddenNodes[i].signalErrror = Sigmoid::SigmoidD(hiddenNodes[i].getOutput())*sum;
-	//	std::cout << "HNSigErr" << i << " =" << outputNodes[i].signalErrror << std::endl;
-	//}
-
 	double sum;
 	//std::cout << "hidden layer size = " << hiddenNodes.size() << std::endl;
 	for (int i = 0; i < hiddenNodes.size(); ++i){
@@ -138,7 +123,7 @@ void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desire
 			sum += outputNodes[j].getWeight(i)*(desiredOutput[j] - actualOutput[outputIndex][j]);
 		}
 
-		hiddenNodes[i].signalErrror = Sigmoid::SigmoidD(hiddenNodes[i].getOutput());
+		hiddenNodes[i].signalErrror = Sigmoid::SigmoidD(hiddenNodes[i].getOutput())*sum;
 		//std::cout << "HNSigErr" << i << " =" << hiddenNodes[i].signalErrror << std::endl;
 	}
 
@@ -146,7 +131,12 @@ void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desire
 
 	for (int i = 0; i < outputNodes.size(); ++i){
 		for (int j = 0; j < outputNodes[i].getNumberOfWeights(); j++){
-			outputNodes[i].deltaWeight = learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j);
+			if (i > 0){
+				outputNodes[i].deltaWeight = (learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j))+outputNodes[i-1].deltaWeight*0.3;
+			}
+			else{
+				outputNodes[i].deltaWeight = learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j);
+			}
 			//std::cout << "out weight (" << i << "," << j << ") was " << outputNodes[i].getWeight(j);
 			outputNodes[i].adjustWeight(j, outputNodes[i].deltaWeight);
 			//std::cout << " => now " << outputNodes[i].getWeight(j) << std::endl;
@@ -155,7 +145,12 @@ void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desire
 
 	for (int i = 0; i < hiddenNodes.size(); ++i){
 		for (int j = 0; j < hiddenNodes[i].getNumberOfWeights(); j++){
-			hiddenNodes[i].deltaWeight = learningRate*hiddenNodes[i].signalErrror*hiddenNodes[i].getInput(j);
+			if (i > 0){
+				hiddenNodes[i].deltaWeight = (learningRate*hiddenNodes[i].signalErrror*hiddenNodes[i].getInput(j))+hiddenNodes[i-1].deltaWeight*0.3;
+			}
+			else{
+				hiddenNodes[i].deltaWeight = learningRate*hiddenNodes[i].signalErrror*hiddenNodes[i].getInput(j);
+			}
 			hiddenNodes[i].adjustWeight(j, hiddenNodes[i].deltaWeight);
 		}
 	}
@@ -174,11 +169,10 @@ double CNeuralNet::meanSquaredError(const std::vector<double> & const desiredOut
 	*/
 	double sum =0;
 	for (int i = 0; i < outputLayerSize; ++i){
-		double err = desiredOutput[i] - actualOutput[0][i];
+		double err = desiredOutput[i] - actualOutput[outputIndex][i];
 		//std::cout << "mse" << outputIndex << "-" << i << " => " << desiredOutput[i] << "-" << actualOutput[outputIndex][i] << "=" << err << std::endl;
 		sum += err*err;
 	}
-	std::cout << "mse" << outputIndex << " => " << sum / outputLayerSize << std::endl;
 	return sum/outputLayerSize;
 }
 /**
@@ -195,15 +189,16 @@ void CNeuralNet::train(std::vector<std::vector<double>>  const inputs,
 	outputIndex = 0;
 	printf("inside train\n");
 	desiredOutput.resize(trainingSetSize);
-	actualOutput.resize(trainingSetSize);
+	actualOutput.resize(trainingSetSize+1);
 	std::copy(outputs.begin(), outputs.end(), desiredOutput.begin());
 	for (int i = 0; i < actualOutput.size(); ++i){
 		actualOutput[i].resize(desiredOutput[0].size());
 	}
+	
 	printf("resized\n");
 	
-	//do{
-	for (int k = 0; k < 50; ++k){
+	int count = 1;
+	do{
 		//std::cout << "k = " << k << std::endl;
 		for (int i = 0; i < inputs.size(); ++i){
 			outputIndex = i;
@@ -212,13 +207,20 @@ void CNeuralNet::train(std::vector<std::vector<double>>  const inputs,
 			propagateErrorBackward(desiredOutput[i]);
 		}
 		outputIndex = 0;
-		meanSquaredError(desiredOutput[0]);
-		//if (k%100 == 0)
-			//std::cout << k << " mse for " << 0 << " => " << meanSquaredError(desiredOutput[0]);
-		/*std::string test;
-		std::getline(std::cin, test);*/
-	}
-	//} while (meanSquaredError(desiredOutput[0]) > mseCutOff);
+		if (count % 20 == 0)
+			//std::cout << "mse0 =" << meanSquaredError(desiredOutput[0]) << std::endl;
+			printAllMSEs();
+
+		++count;
+		//std::cout << "DO = " << desiredOutput[0][0] << desiredOutput[0][1] << std::endl;
+		//std::cout << "AO = " << actualOutput[0][0] << actualOutput[0][1] << std::endl;
+ 	} while (!checkMSE());
+	//} while (count < 5);
+
+	std::cout << "##########################"
+		<< std::endl << "mse0 =" << meanSquaredError(desiredOutput[0]) << std::endl
+		<< "##########################"
+		<< std::endl;
 	printf("leaving train\n");
 }
 /**
@@ -226,11 +228,68 @@ Once our network is trained we can simply feed it some input though the feed for
 method and take the maximum index value as the classification
 */
 uint CNeuralNet::classify(const std::vector<double> & const input){
-	return 1; //TODO: fix me
+	outputIndex = actualOutput.size() - 1;
+	feedForward(input);
+	uint maxIndex = 0;
+	double maxValue = -DBL_MAX;
+
+	//std::cout << "outputs = " << actualOutput[outputIndex][0] << ", " << actualOutput[outputIndex][1] << std::endl;
+
+	for (int i = 0; i < actualOutput[outputIndex].size(); ++i){
+		if (actualOutput[outputIndex][i] > maxValue){
+			maxValue = actualOutput[outputIndex][i];
+			maxIndex = i;
+		}
+	}
+	//std::cout << "maxIndex = " << maxIndex << std::endl;
+	return maxIndex;
 }
 /**
 Gets the output at the specified index
 */
-double CNeuralNet::getOutput(uint index) const{
-	return 0; //TODO: fix me
+std::vector<double> CNeuralNet::getOutput(uint index) const{
+	return actualOutput[index];
+}
+
+/**
+* Checks all MSEs and if one is above cutt off, blame all.
+* false = MSE is too high
+* true = MSE is correct
+**/
+bool CNeuralNet::checkMSE(){
+	//std::cout << "inside CMSE" << std::endl;
+	double sum = 0;
+	for (int i = 0; i < desiredOutput.size(); ++i){
+		outputIndex = i;
+		sum += meanSquaredError(desiredOutput[i]);
+	}
+	//for (int i = 0; i < desiredOutput.size(); ++i){
+	//	outputIndex = i;
+	//	//sum += meanSquaredError(desiredOutput[i]);
+	//	if (meanSquaredError(desiredOutput[i]) > mseCutOff){
+	//		outputIndex = 0;
+	//		return false;
+	//	}
+	//}
+	outputIndex = 0;
+	
+	if ((sum / desiredOutput.size()) > mseCutOff){
+		return false;
+	}
+	else{
+		return true;
+	}
+	//return true;
+}
+
+void CNeuralNet::printAllMSEs(){
+	double sum = 0;
+	for (int i = 0; i < desiredOutput.size(); ++i){
+		outputIndex = i;
+		sum += meanSquaredError(desiredOutput[i]);
+		 
+		if (meanSquaredError(desiredOutput[i]) > mseCutOff)
+			std::cout << "mse" << i << " = " << meanSquaredError(desiredOutput[i]) << std::endl;
+	}
+	std::cout << "mse avg = " << (sum / desiredOutput.size()) << std::endl;
 }

@@ -43,8 +43,10 @@ public:
 	void initWeights();
 	void train(const std::vector<std::vector<double>> const inputs, const std::vector<std::vector<double>> const outputs, uint trainingSetSize); //you may modify this to do std::vector<std::vector<double> > or do boost multiarray or something else if you want
 	uint classify(const std::vector<double> & const input); //you may modify this to do std::vector<double> if you want
-	double getOutput(uint index) const;
+	std::vector<double> getOutput(uint index) const;
 	virtual ~CNeuralNet();
+	bool checkMSE();
+	void printAllMSEs();
 };
 
 #endif /* CNEURALNET_H_ */
