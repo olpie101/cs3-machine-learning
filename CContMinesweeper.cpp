@@ -162,7 +162,7 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 	SVector2D<double> DistToObject;
 	double minMagDistToObject;
 		
-	if (m_iClosestMine > -1){
+	if (m_iClosestMine > -1 && !objects[m_iClosestMine]->isDead()){
 		DistToObject = m_vPosition - objects[m_iClosestMine]->getPosition();
 		
 		minMagDistToObject = Vec2DLength<double>(DistToObject);
@@ -173,6 +173,15 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 			if (m_iClosestMine == 0)
 				std::cout << "found mine 0" << std::endl;
 			return m_iClosestMine;
+		}
+	}
+
+	for (int i = 0; i < objects.size(); ++i){
+		if (objects[i]->getType() == CCollisionObject::ObjectType::Mine && !objects[i]->isDead()){
+			DistToObject = m_vPosition - objects[i]->getPosition();
+			if (Vec2DLength<double>(DistToObject) < (size + 5)){
+				return i;
+			}
 		}
 	}
 
@@ -213,7 +222,7 @@ void CContMinesweeper::setSpeed(double speed_factor_of_full_throttle)
 {
 	//if (m_iClosestMine == 0){
 		
-		m_dSpeed = (double(MAX_SPEED_IN_PIXELS)/350)*speed_factor_of_full_throttle +0.34f;
+		m_dSpeed = (double(MAX_SPEED_IN_PIXELS)/350)*speed_factor_of_full_throttle +0.39f;
 		//std::cout << "speed0 = " << m_dSpeed << std::endl;
 	//}
 	//else{
