@@ -25,7 +25,7 @@ public:
 					   m_bDead(false){}
 	virtual ~CMinesweeper(void);
 
-	void		IncrementMinesGathered(){++m_dMinesGathered;}
+	void		IncrementMinesGathered(){ ++m_dMinesGathered; m_iClosestMine = -1; }
 	double		MinesGathered()const{return m_dMinesGathered;}
 	void		Reset();
 	void		die();

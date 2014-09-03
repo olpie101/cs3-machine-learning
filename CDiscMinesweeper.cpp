@@ -95,6 +95,7 @@ bool CDiscMinesweeper::Update(vector<CDiscCollisionObject*> &objects)
 //-----------------------------------------------------------------------
 void CDiscMinesweeper::GetClosestObjects(vector<CDiscCollisionObject*> &objects)
 {
+	std::cout << "inside CDM" << std::endl;
 	double			closest_mine_so_far = 99999, closest_rock_so_far = 99999, closest_super_mine_so_far = 99999;
 
 	SVector2D<int>		vClosestObject(0, 0);

@@ -71,12 +71,14 @@ bool CContController::Update()
 	//information from its surroundings. The output from the learning algorithm is obtained
 	//and the sweeper is moved. If it encounters a mine its MinesGathered is
 	//updated appropriately,
+	//if (m_iIterations > 0){ std::cout << "iteration 1 CCC update" << std::endl; }
 	if (m_iTicks++ < CParams::iNumTicks)
 	{
 		for (int i=0; i<m_NumSweepers; ++i)
 		{
 			if (m_vecSweepers[i]->isDead()) continue; //skip if dead
 			//update the position
+			//if (m_iIterations > 0){ std::cout << "iteration 1 about to update mines" << std::endl; }
 			if (!(m_vecSweepers[i])->Update(m_vecObjects))
 			{
 				//error in processing the learning algorithm
@@ -84,10 +86,12 @@ bool CContController::Update()
 
 				return false;
 			}
+			//if (m_iIterations > 0){ std::cout << "iteration 1 sweeper update finished" << std::endl; }
 				
 			//see if it's found a mine
 			int GrabHit = (m_vecSweepers[i])->CheckForObject(m_vecObjects,
 													CParams::dMineScale);
+			//if (m_iIterations > 0){ std::cout << "iteration 1 checked for objects" << std::endl; }
 
 			if (GrabHit >= 0)
 			{
@@ -156,12 +160,15 @@ bool CContController::Update()
 		{
 			(m_vecSweepers[i])->Reset();
 		}
+		std::cout << "finished resetting mines" << std::endl;
 		//reset supermine
-		for (int i = 0; i < m_NumMines+m_NumRocks+m_NumSuperMines; ++i)
+		for (int i = 0; i < m_vecObjects.size(); ++i)
 		{
+			m_vecObjects[i]->setTargeted(false);
 			if (m_vecObjects[i]->getType() == CCollisionObject::ObjectType::SuperMine)
 				m_vecObjects[i]->Reset();
 		}
+		std::cout << "finished resetting everything else" << std::endl;
 	}
 	return true;
 }

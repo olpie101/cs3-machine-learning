@@ -106,7 +106,9 @@ inline double dot_between_vlook_and_vObject(const CContMinesweeper &s,const CCon
 
 bool CBackPropController::Update(void)
 {
+	//==if (m_iIterations > 0){ std::cout << "iteration 1 started " << m_iIterations << std::endl; }
 	CContController::Update(); //call the parent's class update. Do not delete this.
+	//if (m_iIterations > 0){ std::cout << "iteration 1 parent update complete" << std::endl; }
 	for (auto s = m_vecSweepers.begin(); s != m_vecSweepers.end(); ++s){
 		//compute the dot between the look vector and vector to the closest mine:
 		double dot_mine = dot_between_vlook_and_vObject(**s,*m_vecObjects[(*s)->getClosestMine()]);
@@ -114,6 +116,7 @@ bool CBackPropController::Update(void)
 		double dot_supermine = dot_between_vlook_and_vObject(**s,*m_vecObjects[(*s)->getClosestSupermine()]);
 		double dist_rock = Vec2DLength(m_vecObjects[(*s)->getClosestRock()]->getPosition() - (*s)->Position());
 		double dist_supermine = Vec2DLength(m_vecObjects[(*s)->getClosestSupermine()]->getPosition() - (*s)->Position());
+		//if (m_iIterations > 0){ std::cout << "iteration 1 got values" << std::endl; }
 		//cheat a bit here... passing the distance into the neural net as well increases the search space dramatrically... :
 		std:vector<double> dots = { dot_mine, (dist_rock < 50 || dist_supermine < 50) ? ((dist_rock < dist_supermine) ? dot_rock : dot_supermine) : -1}; 
 		if (_neuralnet->classify(dots) == 0){ // turn towards the mine
@@ -132,7 +135,7 @@ bool CBackPropController::Update(void)
 			}
 		}
 	}
-
+	//if (m_iIterations > 0){ std::cout << "iteration 1 loop finished" << std::endl; }
 	return true; //method returns true if successful. Do not delete this.
 }
 

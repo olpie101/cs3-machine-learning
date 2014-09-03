@@ -11,6 +11,7 @@ CContMinesweeper::CContMinesweeper():
 	//create a random start position
 	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth), 
 					                (RandFloat() * CParams::WindowHeight));
+	setSpeed(0.0714285714285714f);
 }
 
 //-------------------------------------------Reset()--------------------
@@ -24,11 +25,15 @@ void CContMinesweeper::Reset()
 	//reset the sweepers positions
 	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth), 
 					                (RandFloat() * CParams::WindowHeight));
+
+	setSpeed(0.0714285714285714f);
 	
 	CMinesweeper::Reset();
 
 	//and the rotation
 	m_dRotation = RandFloat()*CParams::dTwoPi;
+
+
 
 	return;
 }
@@ -96,52 +101,55 @@ void CContMinesweeper::GetClosestObjects(vector<CContCollisionObject*> &objects)
 	double			closest_mine_so_far = 99999, closest_rock_so_far = 99999, closest_super_mine_so_far = 99999;
 
 	SVector2D<double>		vClosestObject(0, 0);
-
-	int numberOfTargetedMines = 0;
-	//cycle through mines to find closest
-	for (int i=0; i<objects.size(); i++)
-	{
-		if (objects[i]->isDead()) continue; //skip if object was destroyed earlier
-		if (objects[i]->isTargeted()) {
-			++numberOfTargetedMines;
-			if (numberOfTargetedMines < CParams::iNumMines+5){
-				//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "skipping mine " << "i" << std::endl;
-				continue; //skip if current object has been targeted
+		int numberOfTargetedMines = 0;
+		//cycle through mines to find closest
+		for (int i = 0; i < objects.size(); i++)
+		{
+			if (objects[i]->isDead()) continue; //skip if object was destroyed earlier
+			if (objects[i]->isTargeted()) {
+				++numberOfTargetedMines;
+				if (numberOfTargetedMines < CParams::iNumMines){
+					//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "skipping mine " << "i" << std::endl;
+					continue; //skip if current object has been targeted
+				}
+				else{
+					//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "cycled through all mines " << "NOTM =" << numberOfTargetedMines << std::endl;
+				}
 			}
-			else{
-				//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "cycled through all mines " << "NOTM =" << numberOfTargetedMines << std::endl;
+			double len_to_object = Vec2DLength<double>(objects[i]->getPosition() - m_vPosition);
+
+			switch (objects[i]->getType()){
+			case CCollisionObject::ObjectType::Mine:
+				if (len_to_object < closest_mine_so_far && m_iClosestMine == -1)
+				{
+					//std::cout << "getting new mine" << m_iClosestMine << ", obj size = " << objects.size() << std::endl;
+					closest_mine_so_far = len_to_object;
+					vClosestObject = objects[i]->getPosition() - m_vPosition;
+					m_iClosestMine = i;
+				}
+				break;
+			case CCollisionObject::ObjectType::Rock:
+				if (len_to_object < closest_rock_so_far)
+				{
+					closest_rock_so_far = len_to_object;
+					vClosestObject = objects[i]->getPosition() - m_vPosition;
+					m_iClosestRock = i;
+				}
+				break;
+			case CCollisionObject::ObjectType::SuperMine:
+				if (len_to_object < closest_super_mine_so_far)
+				{
+					closest_super_mine_so_far = len_to_object;
+					vClosestObject = objects[i]->getPosition() - m_vPosition;
+					m_iClosestSupermine = i;
+				}
+				break;
 			}
 		}
-		double len_to_object = Vec2DLength<double>(objects[i]->getPosition() - m_vPosition);
-
-		switch(objects[i]->getType()){
-		case CCollisionObject::ObjectType::Mine:
-			if (len_to_object < closest_mine_so_far)
-			{
-				closest_mine_so_far	= len_to_object;
-				vClosestObject	= objects[i]->getPosition()-m_vPosition;
-				m_iClosestMine = i;
-			}
-			break;
-		case CCollisionObject::ObjectType::Rock:
-			if (len_to_object < closest_rock_so_far)
-			{
-				closest_rock_so_far	= len_to_object;
-				vClosestObject	= objects[i]->getPosition()-m_vPosition;
-				m_iClosestRock = i;
-			}
-			break;
-		case CCollisionObject::ObjectType::SuperMine:
-			if (len_to_object < closest_super_mine_so_far)
-			{
-				closest_super_mine_so_far = len_to_object;
-				vClosestObject	= objects[i]->getPosition()-m_vPosition;
-				m_iClosestSupermine = i;
-			}
-			break;
-		}
-	}
-	objects[m_iClosestMine]->setTargeted(true); // set closest untargeted mine as now being targeted
+		//std::cout << "got new mine = " << m_iClosestMine << std::endl;
+		//This is a problem
+		objects[m_iClosestMine]->setTargeted(true); // set closest untargeted mine as now being targeted
+		//std:cout << "set new mine as target" << std::endl;
 }
 //----------------------------- CheckForMine -----------------------------
 //
@@ -150,14 +158,30 @@ void CContMinesweeper::GetClosestObjects(vector<CContCollisionObject*> &objects)
 //-----------------------------------------------------------------------
 int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, double size)
 {
-	SVector2D<double> DistToObject = m_vPosition - objects[m_iClosestMine]->getPosition();
+
+	SVector2D<double> DistToObject;
+	double minMagDistToObject;
 		
-	if (Vec2DLength<double>(DistToObject) < (size + 5))
-	{
+	if (m_iClosestMine > -1){
+		DistToObject = m_vPosition - objects[m_iClosestMine]->getPosition();
+		
+		minMagDistToObject = Vec2DLength<double>(DistToObject);
+		/*if (m_iClosestMine == 0)
+			std::cout << "dist to mine = " << minMagDistToObject << std::endl;*/
+		if (minMagDistToObject < (size + 5))
+		{
+			if (m_iClosestMine == 0)
+				std::cout << "found mine 0" << std::endl;
 			return m_iClosestMine;
+		}
 	}
 
 	DistToObject = m_vPosition - objects[m_iClosestRock]->getPosition();
+	if (Vec2DLength<double>(DistToObject) < minMagDistToObject)
+		minMagDistToObject = Vec2DLength<double>(DistToObject);
+
+	/*if (m_iClosestMine == 0)
+		std::cout << "dist to rock = " << Vec2DLength<double>(DistToObject) << std::endl;*/
 		
 	if (Vec2DLength<double>(DistToObject) < (size + 5))
 	{
@@ -165,12 +189,20 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 	}
 
 	DistToObject = m_vPosition - objects[m_iClosestSupermine]->getPosition();
+	if (Vec2DLength<double>(DistToObject) < minMagDistToObject)
+		minMagDistToObject = Vec2DLength<double>(DistToObject);
+
+	/*if (m_iClosestMine == 0)
+		std::cout << "dist to supermine = " << Vec2DLength<double>(DistToObject) << std::endl;*/
 		
 	if (Vec2DLength<double>(DistToObject) < (size + 5))
 	{
 			return m_iClosestSupermine;
 	}
 
+	setSpeed(minMagDistToObject);
+	/*if (m_iClosestMine == 0)
+		std::cout << "dist to closest = " << minMagDistToObject << std::endl;*/
   return -1;
 }
 //-----------------------------------------------------------------------
@@ -179,7 +211,14 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 //-----------------------------------------------------------------------
 void CContMinesweeper::setSpeed(double speed_factor_of_full_throttle)
 {
-	m_dSpeed = speed_factor_of_full_throttle * MAX_SPEED_IN_PIXELS;
+	//if (m_iClosestMine == 0){
+		
+		m_dSpeed = (double(MAX_SPEED_IN_PIXELS)/350)*speed_factor_of_full_throttle +0.34f;
+		//std::cout << "speed0 = " << m_dSpeed << std::endl;
+	//}
+	//else{
+	//	m_dSpeed = 0.5;// (0.5 / 7) * MAX_SPEED_IN_PIXELS;
+	//}
 }
 double CContMinesweeper::getSpeed() const
 {
