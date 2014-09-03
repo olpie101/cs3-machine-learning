@@ -1,10 +1,10 @@
 #include "CContCollisionObject.h"
 #include "SVector2D.h"
-CContCollisionObject::CContCollisionObject(): CCollisionObject(ObjectType::Mine)
+CContCollisionObject::CContCollisionObject() : CCollisionObject(ObjectType::Mine), targeted(false)
 {
 	m_vPosition = new SVector2D<double>(0,0);
 }
-CContCollisionObject::CContCollisionObject(ObjectType objectType, SVector2D<double> position):CCollisionObject(objectType)
+CContCollisionObject::CContCollisionObject(ObjectType objectType, SVector2D<double> position) : CCollisionObject(objectType), targeted(false)
 {
 	m_vPosition = new SVector2D<double>(position.x,position.y);
 }
@@ -22,3 +22,7 @@ SVector2D<double> CContCollisionObject::getPosition() const
 {
 	return *m_vPosition;
 }
+
+bool CContCollisionObject::isTargeted(){ return targeted; }
+
+void CContCollisionObject::setTargeted(bool value){ targeted = value; }

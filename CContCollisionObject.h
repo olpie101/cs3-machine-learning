@@ -11,9 +11,12 @@ public:
 
 	void setPosition(SVector2D<double> position);
 	SVector2D<double> getPosition() const;
+	bool isTargeted();
+	void setTargeted(bool value);
 	
 private:
 	SVector2D<double> * m_vPosition;
+	bool targeted = false;
 };
 
 #endif

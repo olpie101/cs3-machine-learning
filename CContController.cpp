@@ -141,6 +141,8 @@ bool CContController::Update()
 		}
 		
 		m_vecAvMinesGathered.push_back(sum/float(m_vecSweepers.size()));
+		std::cout << "mines gathered = " << m_vecAvMinesGathered.back() << std::endl;
+		std::cout << "# mines = " << m_NumMines << std::endl;
 		m_vecMostMinesGathered.push_back(maxMines);
 		m_vecDeaths.push_back(deaths);
 		//increment the iteration counter

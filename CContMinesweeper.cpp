@@ -97,10 +97,21 @@ void CContMinesweeper::GetClosestObjects(vector<CContCollisionObject*> &objects)
 
 	SVector2D<double>		vClosestObject(0, 0);
 
+	int numberOfTargetedMines = 0;
 	//cycle through mines to find closest
 	for (int i=0; i<objects.size(); i++)
 	{
 		if (objects[i]->isDead()) continue; //skip if object was destroyed earlier
+		if (objects[i]->isTargeted()) {
+			++numberOfTargetedMines;
+			if (numberOfTargetedMines < CParams::iNumMines+5){
+				//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "skipping mine " << "i" << std::endl;
+				continue; //skip if current object has been targeted
+			}
+			else{
+				//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "cycled through all mines " << "NOTM =" << numberOfTargetedMines << std::endl;
+			}
+		}
 		double len_to_object = Vec2DLength<double>(objects[i]->getPosition() - m_vPosition);
 
 		switch(objects[i]->getType()){
@@ -130,6 +141,7 @@ void CContMinesweeper::GetClosestObjects(vector<CContCollisionObject*> &objects)
 			break;
 		}
 	}
+	objects[m_iClosestMine]->setTargeted(true); // set closest untargeted mine as now being targeted
 }
 //----------------------------- CheckForMine -----------------------------
 //

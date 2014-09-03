@@ -6,6 +6,7 @@ CMinesweeper::~CMinesweeper(void)
 
 void CMinesweeper::Reset(){
 	this->m_dMinesGathered = 0;
+	this->m_iClosestMine = -1;
 	this->m_bDead = false;
 }
 void CMinesweeper::die(){

@@ -273,7 +273,7 @@ bool CNeuralNet::checkMSE(){
 	//}
 	outputIndex = 0;
 	
-	if ((sum / desiredOutput.size()) > mseCutOff){
+	if ((sum / desiredOutput.size()) > mseCutOff*9){
 		return false;
 	}
 	else{
@@ -288,7 +288,7 @@ void CNeuralNet::printAllMSEs(){
 		outputIndex = i;
 		sum += meanSquaredError(desiredOutput[i]);
 		 
-		if (meanSquaredError(desiredOutput[i]) > mseCutOff)
+		if (meanSquaredError(desiredOutput[i]) > mseCutOff*10)
 			std::cout << "mse" << i << " = " << meanSquaredError(desiredOutput[i]) << std::endl;
 	}
 	std::cout << "mse avg = " << (sum / desiredOutput.size()) << std::endl;

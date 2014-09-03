@@ -21,7 +21,7 @@ protected:
 public:
 	CMinesweeper(void):m_dMinesGathered(0),
 					   m_dScale(CParams::iSweeperScale),
-					   m_iClosestMine(0),
+					   m_iClosestMine(-1),
 					   m_bDead(false){}
 	virtual ~CMinesweeper(void);
 
