@@ -11,7 +11,6 @@ CContMinesweeper::CContMinesweeper():
 	//create a random start position
 	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth), 
 					                (RandFloat() * CParams::WindowHeight));
-	setSpeed(0.0714285714285714f);
 }
 
 //-------------------------------------------Reset()--------------------
@@ -26,7 +25,6 @@ void CContMinesweeper::Reset()
 	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth), 
 					                (RandFloat() * CParams::WindowHeight));
 
-	setSpeed(0.0714285714285714f);
 	
 	CMinesweeper::Reset();
 
@@ -102,18 +100,26 @@ void CContMinesweeper::GetClosestObjects(vector<CContCollisionObject*> &objects)
 
 	SVector2D<double>		vClosestObject(0, 0);
 		int numberOfTargetedMines = 0;
+		//std::cout << "GCO" << CParams::iNumMines << std::endl;
 		//cycle through mines to find closest
 		for (int i = 0; i < objects.size(); i++)
 		{
 			if (objects[i]->isDead()) continue; //skip if object was destroyed earlier
-			if (objects[i]->isTargeted()) {
+			if (objects[i]->isTargeted() && m_iClosestMine < 0) {
 				++numberOfTargetedMines;
 				if (numberOfTargetedMines < CParams::iNumMines){
+					//std::cout << "keep looking for new target" << std::endl;
 					//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "skipping mine " << "i" << std::endl;
 					continue; //skip if current object has been targeted
 				}
 				else{
 					//std::cout << "mine at ( " << this->Position().x << "," << this->Position().y << ")" << "cycled through all mines " << "NOTM =" << numberOfTargetedMines << std::endl;
+					//std::cout << "setting random mine" << std::endl;
+					do{
+						m_iClosestMine = RandInt(0, objects.size()-1);
+						//std::cout << "generated random number" << std::endl;
+					} while (objects[m_iClosestMine]->getType() != CCollisionObject::ObjectType::Mine);
+					//std::cout << "set random mine" << std::endl;
 				}
 			}
 			double len_to_object = Vec2DLength<double>(objects[i]->getPosition() - m_vPosition);
@@ -147,6 +153,7 @@ void CContMinesweeper::GetClosestObjects(vector<CContCollisionObject*> &objects)
 			}
 		}
 		//std::cout << "got new mine = " << m_iClosestMine << std::endl;
+		//std::cout << "GCO2" << std::endl;
 		//This is a problem
 		objects[m_iClosestMine]->setTargeted(true); // set closest untargeted mine as now being targeted
 		//std:cout << "set new mine as target" << std::endl;
@@ -160,22 +167,19 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 {
 
 	SVector2D<double> DistToObject;
-	double minMagDistToObject;
+	double minMagDistToObject = 0.0f;
 		
 	if (m_iClosestMine > -1 && !objects[m_iClosestMine]->isDead()){
 		DistToObject = m_vPosition - objects[m_iClosestMine]->getPosition();
 		
 		minMagDistToObject = Vec2DLength<double>(DistToObject);
-		/*if (m_iClosestMine == 0)
-			std::cout << "dist to mine = " << minMagDistToObject << std::endl;*/
 		if (minMagDistToObject < (size + 5))
 		{
-			if (m_iClosestMine == 0)
-				std::cout << "found mine 0" << std::endl;
 			return m_iClosestMine;
 		}
 	}
 
+	//remove mine if sweeper is passing over it even if not target
 	for (int i = 0; i < objects.size(); ++i){
 		if (objects[i]->getType() == CCollisionObject::ObjectType::Mine && !objects[i]->isDead()){
 			DistToObject = m_vPosition - objects[i]->getPosition();
@@ -186,11 +190,6 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 	}
 
 	DistToObject = m_vPosition - objects[m_iClosestRock]->getPosition();
-	if (Vec2DLength<double>(DistToObject) < minMagDistToObject)
-		minMagDistToObject = Vec2DLength<double>(DistToObject);
-
-	/*if (m_iClosestMine == 0)
-		std::cout << "dist to rock = " << Vec2DLength<double>(DistToObject) << std::endl;*/
 		
 	if (Vec2DLength<double>(DistToObject) < (size + 5))
 	{
@@ -198,36 +197,20 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 	}
 
 	DistToObject = m_vPosition - objects[m_iClosestSupermine]->getPosition();
-	if (Vec2DLength<double>(DistToObject) < minMagDistToObject)
-		minMagDistToObject = Vec2DLength<double>(DistToObject);
-
-	/*if (m_iClosestMine == 0)
-		std::cout << "dist to supermine = " << Vec2DLength<double>(DistToObject) << std::endl;*/
 		
 	if (Vec2DLength<double>(DistToObject) < (size + 5))
 	{
 			return m_iClosestSupermine;
 	}
-
-	setSpeed(minMagDistToObject);
-	/*if (m_iClosestMine == 0)
-		std::cout << "dist to closest = " << minMagDistToObject << std::endl;*/
   return -1;
 }
 //-----------------------------------------------------------------------
 // Getters and setters for speed
-// speed_factor_of_full_throttle should be between 0.0 and 1.0
+// speed is set based on distance provided
 //-----------------------------------------------------------------------
-void CContMinesweeper::setSpeed(double speed_factor_of_full_throttle)
-{
-	//if (m_iClosestMine == 0){
-		
-		m_dSpeed = (double(MAX_SPEED_IN_PIXELS)/350)*speed_factor_of_full_throttle +0.39f;
-		//std::cout << "speed0 = " << m_dSpeed << std::endl;
-	//}
-	//else{
-	//	m_dSpeed = 0.5;// (0.5 / 7) * MAX_SPEED_IN_PIXELS;
-	//}
+void CContMinesweeper::setSpeed(double distance)
+{		
+		m_dSpeed = (double(MAX_SPEED_IN_PIXELS)/350)*distance +0.4f;
 }
 double CContMinesweeper::getSpeed() const
 {

@@ -115,6 +115,8 @@ bool CContController::Update()
 					//CContCollisionObject* oldObject = m_vecObjects[GrabHit];
 					//oldObject->die();
 					(m_vecSweepers[i])->die();
+					//if mine dies release is target mine as being targeted
+					(m_vecObjects[(m_vecSweepers[i])->getClosestMine()])->setTargeted(false);
 					break;
 					}
 				case CContCollisionObject::SuperMine:
@@ -124,6 +126,8 @@ bool CContController::Update()
 					oldObject->die();
 																
 					(m_vecSweepers[i])->die();
+					//if mine dies release is target mine as being targeted
+					(m_vecObjects[(m_vecSweepers[i])->getClosestMine()])->setTargeted(false);
 					break;
 					}
 				}

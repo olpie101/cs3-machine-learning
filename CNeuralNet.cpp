@@ -273,7 +273,7 @@ bool CNeuralNet::checkMSE(){
 	//}
 	outputIndex = 0;
 	
-	if ((sum / desiredOutput.size()) > mseCutOff*9){
+	if ((sum / desiredOutput.size()) > mseCutOff){
 		return false;
 	}
 	else{

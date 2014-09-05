@@ -19,7 +19,7 @@
 #include "CContCollisionObject.h"
 #include "CMinesweeper.h"
 #define MAX_TURNING_RATE_IN_DEGREES 2.0
-#define MAX_SPEED_IN_PIXELS 4
+#define MAX_SPEED_IN_PIXELS 5
 using namespace std;
 
 

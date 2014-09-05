@@ -1,6 +1,8 @@
 #pragma once
 #include "ccontcontroller.h"
 #include "CNeuralNet.h"
+#include "utils.h"
+#include <algorithm>
 #include <assert.h>
 class CBackPropController :
 	public CContController

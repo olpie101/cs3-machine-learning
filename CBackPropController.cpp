@@ -114,8 +114,20 @@ bool CBackPropController::Update(void)
 		double dot_mine = dot_between_vlook_and_vObject(**s,*m_vecObjects[(*s)->getClosestMine()]);
 		double dot_rock = dot_between_vlook_and_vObject(**s,*m_vecObjects[(*s)->getClosestRock()]);
 		double dot_supermine = dot_between_vlook_and_vObject(**s,*m_vecObjects[(*s)->getClosestSupermine()]);
+		double dist_mine = Vec2DLength(m_vecObjects[(*s)->getClosestMine()]->getPosition() - (*s)->Position());
 		double dist_rock = Vec2DLength(m_vecObjects[(*s)->getClosestRock()]->getPosition() - (*s)->Position());
 		double dist_supermine = Vec2DLength(m_vecObjects[(*s)->getClosestSupermine()]->getPosition() - (*s)->Position());
+
+		double minDanger;
+		if (dist_rock < dist_mine || dist_supermine < dist_mine){	//dist to mine or supermine < dist to mine
+			if (dist_rock < dist_supermine){//dist to rock is shortest
+				(*s)->setSpeed(dist_rock);
+			}
+			else if (dist_supermine < dist_rock){//dist to supermine is shortest
+				(*s)->setSpeed(dist_supermine);
+			}
+		}
+		else{ (*s)->setSpeed(dist_mine); }
 		//if (m_iIterations > 0){ std::cout << "iteration 1 got values" << std::endl; }
 		//cheat a bit here... passing the distance into the neural net as well increases the search space dramatrically... :
 		std:vector<double> dots = { dot_mine, (dist_rock < 50 || dist_supermine < 50) ? ((dist_rock < dist_supermine) ? dot_rock : dot_supermine) : -1}; 

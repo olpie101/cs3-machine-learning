@@ -42,12 +42,8 @@ void Node::resize(const uint newSize){
 }
 
 void Node::resetWeights(){
-	std::uniform_real_distribution<double> distribution(0.0, 2.1);
-	myclock::time_point beginning = myclock::now();
-
 	for (uint i = 0; i < weights.size(); ++i){
-		std::minstd_rand engine(myclock::now().time_since_epoch().count());
-		weights[i] = distribution(engine) - 1;
+		weights[i] = RandomClamped();
 	}
 	dataChanged = true;
 }
