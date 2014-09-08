@@ -3,6 +3,7 @@
 #include "CContCollisionObject.h"
 #include "CContMinesweeper.h"
 #include <algorithm>
+#include <numeric>
 class CContController :
 	public CController
 {

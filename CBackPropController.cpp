@@ -26,7 +26,7 @@
 CBackPropController::CBackPropController(HWND hwndMain):
 	CContController(hwndMain)
 {
-
+	speedMultiplier =  CParams::iNumMines / (CParams::iNumRocks + CParams::iNumSuperMines);
 }
 
 void CBackPropController::InitializeLearningAlgorithm(void)
@@ -118,24 +118,28 @@ bool CBackPropController::Update(void)
 		double dist_rock = Vec2DLength(m_vecObjects[(*s)->getClosestRock()]->getPosition() - (*s)->Position());
 		double dist_supermine = Vec2DLength(m_vecObjects[(*s)->getClosestSupermine()]->getPosition() - (*s)->Position());
 
+
 		double minDanger;
-		if (dist_rock < dist_mine || dist_supermine < dist_mine){	//dist to mine or supermine < dist to mine
-			if (dist_rock < dist_supermine){//dist to rock is shortest
-				(*s)->setSpeed(dist_rock);
-			}
-			else if (dist_supermine < dist_rock){//dist to supermine is shortest
-				(*s)->setSpeed(dist_supermine);
-			}
+		if (min(dist_rock, dist_supermine) < dist_mine){	//dist to mine or supermine < dist to mine
+			(*s)->setSpeed(min(dist_rock, dist_supermine), 1);
 		}
-		else{ (*s)->setSpeed(dist_mine); }
+		else{ (*s)->setSpeed(dist_mine, 10); }
+		//(*s)->setSpeed(min(dist_mine/2, min(dist_rock, dist_supermine)));
+
+		double dotSuperMineOrRock = (dist_rock < 50 || dist_supermine < 50) ? ((dist_rock < dist_supermine) ? dot_rock : dot_supermine) : -1;
+
+		Clamp(dotSuperMineOrRock, 0, 1);
+
 		//if (m_iIterations > 0){ std::cout << "iteration 1 got values" << std::endl; }
 		//cheat a bit here... passing the distance into the neural net as well increases the search space dramatrically... :
-		std:vector<double> dots = { dot_mine, (dist_rock < 50 || dist_supermine < 50) ? ((dist_rock < dist_supermine) ? dot_rock : dot_supermine) : -1}; 
+		std:vector<double> dots = { dot_mine, dotSuperMineOrRock}; 
+
 		if (_neuralnet->classify(dots) == 0){ // turn towards the mine
 			SPoint pt(m_vecObjects[(*s)->getClosestMine()]->getPosition().x,
 					  m_vecObjects[(*s)->getClosestMine()]->getPosition().y); 
 			(*s)->turn(pt,1);
-		} else {//turn away from a rock or supermine
+		}
+		else if (_neuralnet->classify(dots) == 1) {//turn away from a rock or supermine
 			if (dist_rock < dist_supermine){
 				SPoint pt(m_vecObjects[(*s)->getClosestRock()]->getPosition().x,
 					  m_vecObjects[(*s)->getClosestRock()]->getPosition().y); 
@@ -145,6 +149,9 @@ bool CBackPropController::Update(void)
 					  m_vecObjects[(*s)->getClosestSupermine()]->getPosition().y); 
 				(*s)->turn(pt,1,false);
 			}
+		}
+		else{
+			//Do nothining
 		}
 	}
 	//if (m_iIterations > 0){ std::cout << "iteration 1 loop finished" << std::endl; }

@@ -105,7 +105,7 @@ void CContMinesweeper::GetClosestObjects(vector<CContCollisionObject*> &objects)
 		for (int i = 0; i < objects.size(); i++)
 		{
 			if (objects[i]->isDead()) continue; //skip if object was destroyed earlier
-			if (objects[i]->isTargeted() && m_iClosestMine < 0) {
+			if (objects[i]->isTargeted() && m_iClosestMine == -1) {
 				++numberOfTargetedMines;
 				if (numberOfTargetedMines < CParams::iNumMines){
 					//std::cout << "keep looking for new target" << std::endl;
@@ -208,9 +208,16 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 // Getters and setters for speed
 // speed is set based on distance provided
 //-----------------------------------------------------------------------
+void CContMinesweeper::setSpeed(double distance, int distanceMultiplier)
+{	
+	//std::cout << "speed =" << speed << std::endl;
+	m_dSpeed = (double(MAX_SPEED_IN_PIXELS)*distanceMultiplier)/ (max(CParams::WindowHeight, CParams::WindowWidth))*distance+0.4f;
+}
+
 void CContMinesweeper::setSpeed(double distance)
-{		
-		m_dSpeed = (double(MAX_SPEED_IN_PIXELS)/350)*distance +0.4f;
+{
+	//std::cout << "speed =" << speed << std::endl;
+	m_dSpeed = (MAX_SPEED_IN_PIXELS / (max(CParams::WindowHeight, CParams::WindowWidth)))*distance + 0.4f;
 }
 double CContMinesweeper::getSpeed() const
 {

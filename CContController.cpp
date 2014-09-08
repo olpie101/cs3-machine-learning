@@ -173,6 +173,13 @@ bool CContController::Update()
 				m_vecObjects[i]->Reset();
 		}
 		std::cout << "finished resetting everything else" << std::endl;
+
+		ofstream dataFile;
+		dataFile.open("results.txt", std::ofstream::out | std::ofstream::app);
+		dataFile << m_vecAvMinesGathered.back() << "," << deaths << ","
+			<< (double)std::accumulate(m_vecAvMinesGathered.begin(), m_vecAvMinesGathered.end(), 0) / m_iIterations << ","
+			<< (double)std::accumulate(m_vecDeaths.begin(), m_vecDeaths.end(), 0) / m_iIterations << std::endl;
+		dataFile.close();
 	}
 	return true;
 }

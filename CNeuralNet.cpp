@@ -99,9 +99,9 @@ void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
  2. Compute the error at the hidden layer: sigmoid_d(hidden) * 
 	sum(weights_o_h * difference between expected output and computed output at output layer)
 	for each hidden layer node
- 3. Adjust the weights from the hidden to the output layer: learning rate * error at the output layer * hidden layer output value
+ 3. Adjust the weights from the hidden to the output layer: learning rate * error at the output layer * hidden layer output value + deltaWeight[n-1]*momentum
     for each connection between the hidden and output layers
- 4. Adjust the weights from the input to the hidden layer: learning rate * error at the hidden layer * input layer node value
+ 4. Adjust the weights from the input to the hidden layer: learning rate * error at the hidden layer * input layer node value + deltaWeight[n-1]*momentum
     for each connection between the input and hidden layers
  5. REMEMBER TO FREE ANY ALLOCATED MEMORY WHEN YOU'RE DONE (or use std::vector ;)
 */
@@ -132,7 +132,7 @@ void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desire
 	for (int i = 0; i < outputNodes.size(); ++i){
 		for (int j = 0; j < outputNodes[i].getNumberOfWeights(); j++){
 			if (i > 0){
-				outputNodes[i].deltaWeight = (learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j))+outputNodes[i-1].deltaWeight*0.3;
+				outputNodes[i].deltaWeight = (learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j))+outputNodes[i-1].deltaWeight*0.9;
 			}
 			else{
 				outputNodes[i].deltaWeight = learningRate*outputNodes[i].signalErrror*outputNodes[i].getInput(j);
@@ -146,7 +146,7 @@ void CNeuralNet::propagateErrorBackward(const std::vector<double> & const desire
 	for (int i = 0; i < hiddenNodes.size(); ++i){
 		for (int j = 0; j < hiddenNodes[i].getNumberOfWeights(); j++){
 			if (i > 0){
-				hiddenNodes[i].deltaWeight = (learningRate*hiddenNodes[i].signalErrror*hiddenNodes[i].getInput(j))+hiddenNodes[i-1].deltaWeight*0.3;
+				hiddenNodes[i].deltaWeight = (learningRate*hiddenNodes[i].signalErrror*hiddenNodes[i].getInput(j))+hiddenNodes[i-1].deltaWeight*0.9;
 			}
 			else{
 				hiddenNodes[i].deltaWeight = learningRate*hiddenNodes[i].signalErrror*hiddenNodes[i].getInput(j);
@@ -217,9 +217,10 @@ void CNeuralNet::train(std::vector<std::vector<double>>  const inputs,
  	} while (!checkMSE());
 	//} while (count < 5);
 
-	std::cout << "##########################"
-		<< std::endl << "mse0 =" << meanSquaredError(desiredOutput[0]) << std::endl
-		<< "##########################"
+	std::cout << "##########################" << std::endl;
+		//<< std::endl << "mse0 =" << meanSquaredError(desiredOutput[0]) << std::endl
+		printAllMSEs();
+		std::cout << "##########################"
 		<< std::endl;
 	printf("leaving train\n");
 }
@@ -263,23 +264,17 @@ bool CNeuralNet::checkMSE(){
 		outputIndex = i;
 		sum += meanSquaredError(desiredOutput[i]);
 	}
-	//for (int i = 0; i < desiredOutput.size(); ++i){
-	//	outputIndex = i;
-	//	//sum += meanSquaredError(desiredOutput[i]);
-	//	if (meanSquaredError(desiredOutput[i]) > mseCutOff){
-	//		outputIndex = 0;
-	//		return false;
-	//	}
-	//}
+	/*for (int i = 0; i < desiredOutput.size(); ++i){
+		outputIndex = i;
+		sum += meanSquaredError(desiredOutput[i]);
+		if (meanSquaredError(desiredOutput[i]) > mseCutOff*10){
+			outputIndex = 0;
+			return false;
+		}
+	}*/
 	outputIndex = 0;
-	
-	if ((sum / desiredOutput.size()) > mseCutOff){
-		return false;
-	}
-	else{
-		return true;
-	}
-	//return true;
+
+	return ((sum / desiredOutput.size()) > mseCutOff) ? false : true;
 }
 
 void CNeuralNet::printAllMSEs(){

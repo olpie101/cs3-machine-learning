@@ -9,6 +9,7 @@ class CBackPropController :
 {
 protected:
 	CNeuralNet* _neuralnet;
+	double speedMultiplier;
 public:
 	CBackPropController(HWND hwndMain);
 	virtual void InitializeLearningAlgorithm(void);
