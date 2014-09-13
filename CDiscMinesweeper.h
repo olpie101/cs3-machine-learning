@@ -12,6 +12,7 @@
 //------------------------------------------------------------------------
 #include <vector>
 #include <math.h>
+#include <map>
 #include "utils.h"
 #include "C2DMatrix.h"
 #include "SVector2D.h"
@@ -21,6 +22,8 @@
 using namespace std;
 
 enum ROTATION_DIRECTION {NORTH=1, SOUTH=3, EAST=0, WEST=2};
+enum ACTION {UP=0, RIGHT=1, DOWN=2, LEFT=3};
+typedef std::tuple<int, int, int> triple;
 class CDiscMinesweeper:public CMinesweeper
 {
 
@@ -36,6 +39,10 @@ private:
 	
 	//sets the internal closest object variables for the 3 types of objects
 	void GetClosestObjects(vector<CDiscCollisionObject*> &objects);
+
+	//Sweepers Q-Table tuple(x, y); direction -> score
+	std::map <triple, float> qTable;
+	//											x	y	direction score
 public:
 
 	void setRotation(ROTATION_DIRECTION rotForce);
@@ -58,6 +65,9 @@ public:
 	//-------------------accessor functions
 	SVector2D<int>	Position()const{return SVector2D<int>(m_vPosition.x,m_vPosition.y);}
 	SVector2D<int>	PrevPosition()const{return SVector2D<int>(m_vPrevPosition.x,m_vPrevPosition.y);}
+
+	//Initializes QTable
+	void initializeQTable();
   
 };
 

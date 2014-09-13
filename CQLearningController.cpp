@@ -29,7 +29,10 @@ CQLearningController::CQLearningController(HWND hwndMain):
 */
 void CQLearningController::InitializeLearningAlgorithm(void)
 {
-	//TODO
+	for (int i = 0; i < m_vecSweepers.size(); ++i){
+		std::cout << "initializing QTable for mine " << i << std::endl;
+		m_vecSweepers[i]->initializeQTable();
+	}
 }
 /**
  The immediate reward function. This computes a reward upon achieving the goal state of

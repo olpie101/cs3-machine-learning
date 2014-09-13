@@ -7,10 +7,14 @@ CDiscMinesweeper::CDiscMinesweeper():
 							 CMinesweeper(),
                              m_dRotation((ROTATION_DIRECTION)RandInt(0,3))
 {
+	int gridX = CParams::WindowWidth / CParams::iGridCellDim;
+	int gridY = CParams::WindowHeight / CParams::iGridCellDim;
+
+	//std::cout << gridX << ", " << gridY << std::endl;
 	//create a random start position
 	
-	m_vPosition = SVector2D<int>(RandInt(0,CParams::WindowWidth/CParams::iGridCellDim)*CParams::iGridCellDim, 
-					             RandInt(0,CParams::WindowHeight/CParams::iGridCellDim)*CParams::iGridCellDim);
+	m_vPosition = SVector2D<int>(RandInt(0,gridX)*CParams::iGridCellDim, 
+					             RandInt(0,gridY)*CParams::iGridCellDim);
 }
 
 //-------------------------------------------Reset()--------------------
@@ -95,7 +99,7 @@ bool CDiscMinesweeper::Update(vector<CDiscCollisionObject*> &objects)
 //-----------------------------------------------------------------------
 void CDiscMinesweeper::GetClosestObjects(vector<CDiscCollisionObject*> &objects)
 {
-	std::cout << "inside CDM" << std::endl;
+	//std::cout << "inside CDM" << std::endl;
 	double			closest_mine_so_far = 99999, closest_rock_so_far = 99999, closest_super_mine_so_far = 99999;
 
 	SVector2D<int>		vClosestObject(0, 0);
@@ -174,5 +178,18 @@ void CDiscMinesweeper::setRotation(ROTATION_DIRECTION dir)
 ROTATION_DIRECTION CDiscMinesweeper::getRotation()
 {
 	return m_dRotation;
+}
+
+//initializes Q-table
+void CDiscMinesweeper::initializeQTable(){
+	int gridX = CParams::WindowWidth / CParams::iGridCellDim;
+	int gridY = CParams::WindowHeight / CParams::iGridCellDim;
+	for (int x = 0; x < gridX; ++x){
+		for (int y = 0; y < gridY; ++y){
+			for (int direction = 0; direction < 4; ++direction){
+				qTable.insert(std::make_pair(triple(x, y, direction), 0.0f));
+			}
+		}
+	}
 }
 
