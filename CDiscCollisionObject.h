@@ -8,9 +8,11 @@ public:
 	CDiscCollisionObject();
 	CDiscCollisionObject(ObjectType objectType, SVector2D<int> position);
 	virtual ~CDiscCollisionObject();
-
 	void setPosition(SVector2D<int> position);
 	SVector2D<int> getPosition() const;
+	enum StateType { ALIVE, DEAD };
+	StateType prevState = ALIVE;
+	StateType state = ALIVE;
 	
 private:
 	SVector2D<int> * m_vPosition;

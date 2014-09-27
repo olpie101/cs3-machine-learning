@@ -61,6 +61,7 @@ void CDiscController::InitializeRocks(void)
 								 SVector2D<int>(RandInt(0,CParams::WindowWidth/CParams::iGridCellDim)*CParams::iGridCellDim, 
 					             RandInt(0,CParams::WindowHeight/CParams::iGridCellDim)*CParams::iGridCellDim)));
 	}
+	std::cout << "end ini rocks" << std::endl;
 }
 
 //-------------------------------------Update-----------------------------
@@ -96,6 +97,9 @@ bool CDiscController::Update()
 
 			if (GrabHit >= 0)
 			{
+				if (m_vecObjects[GrabHit]->isDead())
+					continue;
+
 				switch(m_vecObjects[GrabHit]->getType()){
 				case CDiscCollisionObject::Mine:
 					{

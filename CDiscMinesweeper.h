@@ -13,6 +13,8 @@
 #include <vector>
 #include <math.h>
 #include <map>
+#include <set>
+#include <string>
 #include "utils.h"
 #include "C2DMatrix.h"
 #include "SVector2D.h"
@@ -42,6 +44,7 @@ private:
 
 	//Sweepers Q-Table tuple(x, y); direction -> score
 	std::map <triple, float> qTable;
+	std::set < std::string > visited;
 	//											x	y	direction score
 public:
 
@@ -68,7 +71,10 @@ public:
 
 	//Initializes QTable
 	void initializeQTable();
-  
+	double getStateActionEntryFloat(int x, int y, int direction);
+	bool getStateActionEntryBool(int x, int y, int direction);
+	void setStateActionEntry(int x, int y, int direction, double value);
+	void printAllStates();
 };
 
 
