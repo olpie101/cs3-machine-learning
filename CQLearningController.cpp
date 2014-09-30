@@ -124,12 +124,14 @@ bool CQLearningController::Update(void)
 		//TODO:compute your indexes.. it may also be necessary to keep track of the previous state
 		//3:::Observe new state:
 		//4:::Update _Q_s_a accordingly:
+		int prevXTrimmed = m_vecSweepers[sw]->PrevPosition().x / CParams::iGridCellDim;
+		int prevYTrimmed = m_vecSweepers[sw]->PrevPosition().y / CParams::iGridCellDim;
 		int prevX = m_vecSweepers[sw]->PrevPosition().x;
 		int prevY = m_vecSweepers[sw]->PrevPosition().y;
 
 		//Update prev state action
 		double Q = R(prevX, prevY, sw) + gamma*getMaxAction(m_vecSweepers[sw]);
-		m_vecSweepers[sw]->setStateActionEntry(prevX, prevY, m_vecSweepers[sw]->getRotation(), Q);
+		m_vecSweepers[sw]->setStateActionEntry(prevXTrimmed, prevYTrimmed, m_vecSweepers[sw]->getRotation(), Q);
 	}
 	return true;
 }
@@ -148,6 +150,17 @@ bool CQLearningController::checkIfAllActionsZero(CDiscMinesweeper *sweeper){
 	for (int i = 0; i < 4; ++i){
 		if (sweeper->getStateActionEntryFloat(x, y, i) != 0)
 			return false;
+	}
+	return true;
+}
+
+bool CQLearningController::checkIfAllVisited(CDiscMinesweeper *sweeper){
+	int x = sweeper->Position().x / CParams::iGridCellDim;
+	int y = sweeper->Position().y / CParams::iGridCellDim;
+	for (int i = 0; i < 4; ++i){
+		if (!sweeper->getStateActionEntryBool(x, y, i)){
+			return false;
+		}
 	}
 	return true;
 }

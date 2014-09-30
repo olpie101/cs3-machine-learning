@@ -23,6 +23,7 @@ public:
 	virtual bool Update(void);
 	virtual ~CQLearningController(void);
 	bool checkIfAllActionsZero(CDiscMinesweeper *sweeper);
+	bool checkIfAllVisited(CDiscMinesweeper *sweeper);
 	int getMaxActionDirection(CDiscMinesweeper *sweeper);
 	double getMaxAction(CDiscMinesweeper *sweeper);
 
