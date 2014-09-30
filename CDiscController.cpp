@@ -114,7 +114,7 @@ bool CDiscController::Update()
 					//destroy the sweeper until it reincarnates in the next round
 					//CDiscCollisionObject* oldObject = m_vecObjects[GrabHit];
 					//oldObject->die();
-					(m_vecSweepers[i])->die();
+					//(m_vecSweepers[i])->die();
 					break;
 					}
 				case CDiscCollisionObject::SuperMine:

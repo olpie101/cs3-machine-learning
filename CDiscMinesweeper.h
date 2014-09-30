@@ -44,8 +44,7 @@ private:
 
 	//Sweepers Q-Table tuple(x, y); direction -> score
 	std::map <triple, float> qTable;
-	std::set < std::string > visited;
-	//											x	y	direction score
+	std::set < std::string > visited; //Track visited state action since last reset
 public:
 
 	void setRotation(ROTATION_DIRECTION rotForce);

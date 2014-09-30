@@ -25,7 +25,6 @@ public:
 	bool checkIfAllActionsZero(CDiscMinesweeper *sweeper);
 	int getMaxActionDirection(CDiscMinesweeper *sweeper);
 	double getMaxAction(CDiscMinesweeper *sweeper);
-	bool checkIfAllVisited(CDiscMinesweeper *sweeper);
 
 };
 

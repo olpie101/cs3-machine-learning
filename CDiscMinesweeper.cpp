@@ -148,12 +148,9 @@ void CDiscMinesweeper::GetClosestObjects(vector<CDiscCollisionObject*> &objects)
 int CDiscMinesweeper::CheckForObject(vector<CDiscCollisionObject*> &objects, int size)
 {
 	GetClosestObjects(objects);
-	//std::cout << "SCFO" << m_iClosestMine << std::endl;
 	SVector2D<int> DistToObject = m_vPosition - m_vPosition;
 	if (m_iClosestMine > -1 && m_iClosestMine < objects.size()){
 		DistToObject = m_vPosition - objects[m_iClosestMine]->getPosition();
-
-		//std::cout << "SCFO - distance to close mine" << std::endl;
 		if (Vec2DLength<int>(DistToObject) < size + 5)
 		{
 			return m_iClosestMine;
@@ -163,23 +160,18 @@ int CDiscMinesweeper::CheckForObject(vector<CDiscCollisionObject*> &objects, int
 	//std::cout << "SCFOCM" << std::endl;
 	//DistToObject = m_vPosition - objects[m_iClosestRock]->getPosition();
 		
-	if (Vec2DLength<int>(DistToObject) < size+5)
+	/*if (Vec2DLength<int>(DistToObject) < size+5)
 	{
-
 		std::cout << "found rock" << std::endl;
 			return m_iClosestRock;
-	}
+	}*/
 
-	//std::cout << "SCFOCR" << std::endl;
 	DistToObject = m_vPosition - objects[m_iClosestSupermine]->getPosition();
 		
 	if (Vec2DLength<int>(DistToObject) < size+5)
 	{
-		//std::cout << "found supermine" << std::endl;
 			return m_iClosestSupermine;
 	}
-
-	//std::cout << "ECFO" << std::endl;
   return -1;
 }
 //-----------------------------------------------------------------------
@@ -208,45 +200,22 @@ void CDiscMinesweeper::initializeQTable(){
 	}
 }
 
+//Get value of state action
 double CDiscMinesweeper::getStateActionEntryFloat(int x, int y, int direction){
 	return qTable[triple(x, y, direction)];
 }
 
+//Check if a state action has been performed since reset
 bool CDiscMinesweeper::getStateActionEntryBool(int x, int y, int direction){
 	std::string query = std::to_string(x) + std::to_string(y) + std::to_string(direction);
 	return visited.find(query) != visited.begin();
 }
 
+//Add state action to visited set
 void CDiscMinesweeper::setStateActionEntry(int x, int y, int direction, double value){
-	//std::cout << "#floatStart" << value << std::endl;
 	qTable[triple(x, y, direction)] = value;
 	std::string query = std::to_string(x) + std::to_string(y) + std::to_string(direction);
 	if (visited.find(query) == visited.end()){
-		//std::cout << "adding to set" << std::endl;
 		visited.insert(query);
 	}
-	//std::cout << "#floatEnd" << value << std::endl;
-	//std::cout << "#floatEnd" << qTable[triple(x, y, direction)] << std::endl;
-}
-
-void CDiscMinesweeper::printAllStates(){
-	int gridX = CParams::WindowWidth / CParams::iGridCellDim;
-	int gridY = CParams::WindowHeight / CParams::iGridCellDim;
-	ofstream dataFile;
-	dataFile.open("round.txt", std::ofstream::out | std::ofstream::app);
-	for (int x = 0; x < gridX + 1; ++x){
-		for (int y = 0; y < gridY + 1; ++y){
-			for (int d = 0; d < 4; ++d){
-				std::cout << "###" << qTable[triple(x, y, d)];
-				dataFile << qTable[triple(x, y, d)];
-			}
-			//std::cout << std::endl;
-			dataFile << std::endl;
-		}
-		//std::cout << std::endl;
-		dataFile << std::endl;
-	}
-	//std::cout << std::endl;
-	dataFile << std::endl;
-	dataFile.close();
 }
