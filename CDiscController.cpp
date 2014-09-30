@@ -162,6 +162,11 @@ bool CDiscController::Update()
 		//reset the objects:
 		for (auto i = m_vecObjects.begin(); i != m_vecObjects.end(); ++i)
 			(*i)->Reset();
+
+		ofstream dataFile;
+		dataFile.open("results.txt", std::ofstream::out | std::ofstream::app);
+		dataFile << m_vecAvMinesGathered.back() << "," << deaths << std::endl;
+		dataFile.close();
 	}
 	return true;
 }

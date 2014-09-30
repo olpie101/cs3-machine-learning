@@ -9,8 +9,6 @@ CDiscMinesweeper::CDiscMinesweeper():
 {
 	int gridX = CParams::WindowWidth / CParams::iGridCellDim;
 	int gridY = CParams::WindowHeight / CParams::iGridCellDim;
-
-	//std::cout << gridX << ", " << gridY << std::endl;
 	//create a random start position
 	
 	m_vPosition = SVector2D<int>(RandInt(0,gridX)*CParams::iGridCellDim, 
