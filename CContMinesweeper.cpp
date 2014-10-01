@@ -189,12 +189,12 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 		}
 	}
 
-	DistToObject = m_vPosition - objects[m_iClosestRock]->getPosition();
+	/*DistToObject = m_vPosition - objects[m_iClosestRock]->getPosition();
 		
 	if (Vec2DLength<double>(DistToObject) < (size + 5))
 	{
 			return m_iClosestRock;
-	}
+	}*/
 
 	DistToObject = m_vPosition - objects[m_iClosestSupermine]->getPosition();
 		
