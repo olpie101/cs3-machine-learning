@@ -123,7 +123,7 @@ bool CBackPropController::Update(void)
 		if (min(dist_rock, dist_supermine) < dist_mine){	//dist to mine or supermine < dist to mine
 			(*s)->setSpeed(min(dist_rock, dist_supermine), 1);
 		}
-		else{ (*s)->setSpeed(dist_mine, 10); }
+		else{ (*s)->setSpeed(dist_mine, 20); }
 		//(*s)->setSpeed(min(dist_mine/2, min(dist_rock, dist_supermine)));
 
 		double dotSuperMineOrRock = (dist_rock < 50 || dist_supermine < 50) ? ((dist_rock < dist_supermine) ? dot_rock : dot_supermine) : -1;

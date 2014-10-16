@@ -65,7 +65,9 @@ void CNeuralNet::initWeights(){
 void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
 	  //TODO
 	//All hidden layer nodes output the same value to 2 output nodes
-
+	/*std::cout << "inputSize = " << hiddenNodes[0].getNumberOfWeights() << std::endl;
+	std::cout << "hiddenSize = " << hiddenNodes.size() << std::endl;
+	std::cout << "outputSize = " << outputNodes.size() << std::endl;*/
 	for (uint i = 0; i < hiddenNodes.size(); ++i){
 		for (uint j = 0; j < inputs.size(); ++j){
 			hiddenNodes[i].setInput(j, inputs[j]);
@@ -239,6 +241,7 @@ uint CNeuralNet::classify(const std::vector<double> & const input){
 	double maxValue = -DBL_MAX;
 
 	//std::cout << "outputs = " << actualOutput[outputIndex][0] << ", " << actualOutput[outputIndex][1] << std::endl;
+	//std::cout << "outputSize = " << actualOutput[outputIndex].size() << std::endl;
 
 	for (int i = 0; i < actualOutput[outputIndex].size(); ++i){
 		if (actualOutput[outputIndex][i] > maxValue){
@@ -293,5 +296,5 @@ void CNeuralNet::printAllMSEs(){
 	std::cout << "mse avg = " << (sum / desiredOutput.size()) << std::endl;
 }
 
-vector<Node> CNeuralNet::getHiddenNodes(){ return hiddenNodes; }
-vector<Node> CNeuralNet::getOutputNodes(){ return outputNodes; }
+vector<Node>* CNeuralNet::getHiddenNodes(){ return &hiddenNodes; }
+vector<Node>* CNeuralNet::getOutputNodes(){ return &outputNodes; }

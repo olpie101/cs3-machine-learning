@@ -32,6 +32,7 @@ class CEAController :
 protected:
 	bool goneThroughSelection = false;
 	int deathsThisRound;
+	int floatersThisRound = 0; //sweepers who have survived but have gathered no mines
 
 public:
 	CEAController(HWND hwndMain);

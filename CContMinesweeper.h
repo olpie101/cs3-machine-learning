@@ -19,10 +19,10 @@
 #include "CContCollisionObject.h"
 #include "CMinesweeper.h"
 #include "CNeuralNet.h"
-#define MAX_TURNING_RATE_IN_DEGREES 2.0
+#define MAX_TURNING_RATE_IN_DEGREES 5.0
 #define MAX_SPEED_IN_PIXELS 2.0
 #define INPUT_SIZE 2
-#define HIDDEN_SIZE 5
+#define HIDDEN_SIZE 3
 #define OUTPUT_SIZE 2
 using namespace std;
 

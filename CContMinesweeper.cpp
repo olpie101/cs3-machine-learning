@@ -17,14 +17,17 @@ CContMinesweeper::CContMinesweeper():
 	uint count = 0;
 	for (uint i = 0; i < HIDDEN_SIZE; ++i){
 		for (uint j = 0; j < INPUT_SIZE; ++j){
-			genome[count] = neuralNetwork.getHiddenNodes()[i].getWeight(j);
+			//vector<Node> *q = neuralNetwork.getHiddenNodes();
+			
+			genome[count] = (*neuralNetwork.getHiddenNodes())[i].getWeight(j);
 			++count;
 		}
 	}
 
 	for (uint i = 0; i < OUTPUT_SIZE; ++i){
 		for (uint j = 0; j < HIDDEN_SIZE; ++j){
-			genome[count] = neuralNetwork.getOutputNodes()[i].getWeight(j);
+			genome[count] = (*neuralNetwork.getOutputNodes())[i].getWeight(j);
+			++count;
 		}
 	}
 
@@ -68,7 +71,7 @@ CContMinesweeper::CContMinesweeper():
 //----------------------------------------------------------------------
 void CContMinesweeper::Reset()
 {
-	std::cout << "Num Ticks = " << ticksAlive << std::endl;
+	//std::cout << "Num Ticks = " << ticksAlive << std::endl;
 	//reset the sweepers positions
 	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth), 
 					                (RandFloat() * CParams::WindowHeight));
@@ -262,14 +265,14 @@ void CContMinesweeper::setSpeed(double distance, int distanceMultiplier)
 {	
 	//std::cout << "speed =" << speed << std::endl;
 	//m_dSpeed = (double(MAX_SPEED_IN_PIXELS)*distanceMultiplier)/ (max(CParams::WindowHeight, CParams::WindowWidth))*distance+0.4f;
-	m_dSpeed = MAX_SPEED_IN_PIXELS;
+	//m_dSpeed = MAX_SPEED_IN_PIXELS;
 }
 
 void CContMinesweeper::setSpeed(double distance)
 {
 	//std::cout << "speed =" << speed << std::endl;
-	//m_dSpeed = (MAX_SPEED_IN_PIXELS / (max(CParams::WindowHeight, CParams::WindowWidth)))*distance + 0.4f;
-	m_dSpeed = MAX_SPEED_IN_PIXELS;
+	m_dSpeed = (MAX_SPEED_IN_PIXELS / (max(CParams::WindowHeight, CParams::WindowWidth)))*distance + 0.4f;
+	//m_dSpeed = MAX_SPEED_IN_PIXELS;
 }
 double CContMinesweeper::getSpeed() const
 {
@@ -320,20 +323,38 @@ int CContMinesweeper::getNumTicksAlive()const{
 }
 
 void CContMinesweeper::setGenome(vector<double> newGenome){
-	std::cout << "setting new genome" << std::endl;
-	genome = newGenome;
+	//std::cout << "setting new genome" << std::endl;
 	uint count = 0;
 	for (uint i = 0; i < HIDDEN_SIZE; ++i){
 		for (uint j = 0; j < INPUT_SIZE; ++j){
-			neuralNetwork.getHiddenNodes()[i].setWeight(j, genome[count]);
+			(*neuralNetwork.getHiddenNodes())[i].setWeight(j, newGenome[count]);
 			++count;
 		}
 	}
 
 	for (uint i = 0; i < OUTPUT_SIZE; ++i){
 		for (uint j = 0; j < HIDDEN_SIZE; ++j){
-			neuralNetwork.getOutputNodes()[i].setWeight(j, genome[count]);
+			(*neuralNetwork.getOutputNodes())[i].setWeight(j, newGenome[count]);
+			++count;
 		}
 	}
+
+	count = 0;
+	for (uint i = 0; i < HIDDEN_SIZE; ++i){
+		for (uint j = 0; j < INPUT_SIZE; ++j){
+			//vector<Node> *q = neuralNetwork.getHiddenNodes();
+
+			genome[count] = (*neuralNetwork.getHiddenNodes())[i].getWeight(j);
+			++count;
+		}
+	}
+
+	for (uint i = 0; i < OUTPUT_SIZE; ++i){
+		for (uint j = 0; j < HIDDEN_SIZE; ++j){
+			genome[count] = (*neuralNetwork.getOutputNodes())[i].getWeight(j);
+			++count;
+		}
+	}
+	return;
 }
 

@@ -74,9 +74,6 @@ bool CEAController::Update(void)
 	for (uint i = 0; i < CParams::iNumSweepers; ++i){
 		CContMinesweeper * s = m_vecSweepers[i]; 
 		//TODO: set up your sensory inputs and motor outputs here
-
-		if (s->isDead())
-			continue;
 		
 		//compute the dot between the look vector and vector to the closest mine:
 		double dot_mine = dot_between_vlook_and_vObject(*s, *m_vecObjects[s->getClosestMine()]);
@@ -94,13 +91,13 @@ bool CEAController::Update(void)
 		else{ s->setSpeed(dist_mine, 10); }
 		//(*s)->setSpeed(min(dist_mine/2, min(dist_rock, dist_supermine)));
 
-		double dotSuperMineOrRock = (dist_supermine < 50) ? dot_supermine : -1;
+		double dotSuperMineOrRock = (dist_supermine < 25) ? dot_supermine : -1;
 
-		Clamp(dotSuperMineOrRock, 0, 1);
+		//Clamp(dot_supermine, 0, 1);
 
 		//if (m_iIterations > 0){ std::cout << "iteration 1 got values" << std::endl; }
 		//cheat a bit here... passing the distance into the neural net as well increases the search space dramatrically... :
-	std:vector<double> dots = { dot_mine, dotSuperMineOrRock };
+		std:vector<double> dots = { dot_mine, dotSuperMineOrRock };
 
 		if (s->getNeuralNet().classify(dots) == 0){ // turn towards the mine
 			SPoint pt(m_vecObjects[s->getClosestMine()]->getPosition().x,
@@ -132,6 +129,9 @@ void CEAController::selection(){
 
 	for (int i = 0; i < m_vecSweepers.size(); ++i){
 		currentFitness.push_back(SelectionPair(i, fitness(*m_vecSweepers[i])));
+		if (fitness(*m_vecSweepers[i]) < 100 && m_vecSweepers[i]->MinesGathered() == 0){
+			++floatersThisRound;
+		}
 	}
 
 	std::sort(currentFitness.begin(), currentFitness.end());
@@ -151,10 +151,26 @@ void CEAController::selection(){
 		CContMinesweeper *s2 = m_vecSweepers[currentFitness[i+1].id];
 		tempOffspringGenomes = crossover(*s1, *s2);
 		for (int j = 0; j < tempOffspringGenomes.size(); ++j){
+			/*if (i == 0 && j==0){
+				std::cout << "weights before " << std::endl;
+				for (int k = 0; k < tempOffspringGenomes[j].size(); ++k){
+					std::cout << tempOffspringGenomes[j][k] << ", ";
+				}
+				std::cout << std::endl;
+			}*/
 			mutate(tempOffspringGenomes[j]);
+
+			/*if (i == 0 && j == 0){
+				std::cout << "weights after " << std::endl;
+				for (int k = 0; k < tempOffspringGenomes[j].size(); ++k){
+				std::cout << tempOffspringGenomes[j][k] << ", ";
+				}
+				std::cout << std::endl;
+			}*/
+
 			offspringGenomes.push_back(tempOffspringGenomes[j]);
 		}
-		tempOffspringGenomes.clear();
+		//tempOffspringGenomes.clear();
 	}
 
 	uint index = currentFitness.size() - 1;
@@ -164,11 +180,14 @@ void CEAController::selection(){
 		m_vecSweepers[sweeperIndex]->setGenome(offspringGenomes[i]);
 		--index;
 	}
+	floatersThisRound = 0;
+	return;
 }
 
 void CEAController::mutate(vector<double> &s){
-	int numberOfMutations = ((m_vecSweepers[0]->genomeSize) / 3 * deathsThisRound / m_vecSweepers.size()) + 1;
-	std::cout << "numberOfMutations = " << numberOfMutations-1 << std::endl;
+	std::cout << "floaters = " << floatersThisRound << std::endl;
+	int numberOfMutations = ((m_vecSweepers[0]->genomeSize) / 2 * deathsThisRound / m_vecSweepers.size())+(floatersThisRound/8);
+	std::cout << "numberOfMutations = " << numberOfMutations << std::endl;
 
 	std::set<int> mutatedWeights;
 
@@ -179,7 +198,7 @@ void CEAController::mutate(vector<double> &s){
 			double deltaWeight = RandomClamped() / 10;
 			Clamp(deltaWeight, -1, 1);
 			//std::cout << "mutatuing gene " << index << " from " << s[index] << " => " << s[index]+deltaWeight << std::endl;
-			s[index] += deltaWeight;
+			s[index] = RandomClamped(); //+= deltaWeight;
 			mutatedWeights.insert(index);
 			++count;
 		}
@@ -217,5 +236,5 @@ vector<vector<double>> CEAController::crossover(const CContMinesweeper &s1, cons
 
 double CEAController::fitness(const CContMinesweeper &s){
 	double liveScore = s.getNumTicksAlive()*0.1f;
-	return 100 * s.MinesGathered() + liveScore;
+	return 400 * s.MinesGathered() + liveScore;
 }
