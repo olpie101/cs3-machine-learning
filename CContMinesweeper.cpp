@@ -6,12 +6,60 @@
 CContMinesweeper::CContMinesweeper():
 							 CMinesweeper(),
                              m_dRotation(RandFloat()*CParams::dTwoPi),
-							 m_dSpeed(MAX_SPEED_IN_PIXELS)
+							 m_dSpeed(MAX_SPEED_IN_PIXELS), ticksAlive(0),
+							 neuralNetwork(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, 0.05f, 0.001f),
+							 genome(INPUT_SIZE*HIDDEN_SIZE*OUTPUT_SIZE)
 {
 	//create a random start position
 	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth), 
 					                (RandFloat() * CParams::WindowHeight));
+
+	uint count = 0;
+	for (uint i = 0; i < HIDDEN_SIZE; ++i){
+		for (uint j = 0; j < INPUT_SIZE; ++j){
+			genome[count] = neuralNetwork.getHiddenNodes()[i].getWeight(j);
+			++count;
+		}
+	}
+
+	for (uint i = 0; i < OUTPUT_SIZE; ++i){
+		for (uint j = 0; j < HIDDEN_SIZE; ++j){
+			genome[count] = neuralNetwork.getOutputNodes()[i].getWeight(j);
+		}
+	}
+
+	/*for (uint i = 0; i < genome.size(); ++i){
+		std::cout << genome[i] << ", ";
+	}
+	std::cout << std::endl;*/
 }
+
+//CContMinesweeper::CContMinesweeper(vector<double> offspringGenome):
+//					CMinesweeper(),
+//					m_dRotation(RandFloat()*CParams::dTwoPi),
+//					m_dSpeed(MAX_SPEED_IN_PIXELS), ticksAlive(0),
+//					neuralNetwork(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, 0.05f, 0.001f),
+//					genome(INPUT_SIZE*HIDDEN_SIZE*OUTPUT_SIZE){
+//	//create a random start position
+//	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth),
+//		(RandFloat() * CParams::WindowHeight));
+//
+//	uint count = 0;
+//	for (uint i = 0; i < HIDDEN_SIZE; ++i){
+//		for (uint j = 0; j < INPUT_SIZE; ++j){
+//			neuralNetwork.getHiddenNodes()[i].setWeight(j, offspringGenome[count]);
+//			++count;
+//		}
+//	}
+//
+//	for (uint i = 0; i < OUTPUT_SIZE; ++i){
+//		for (uint j = 0; j < HIDDEN_SIZE; ++j){
+//			neuralNetwork.getOutputNodes()[i].setWeight(j, offspringGenome[count]);
+//		}
+//	}
+//
+//	genome = offspringGenome;
+//}
 
 //-------------------------------------------Reset()--------------------
 //
@@ -20,7 +68,7 @@ CContMinesweeper::CContMinesweeper():
 //----------------------------------------------------------------------
 void CContMinesweeper::Reset()
 {
-
+	std::cout << "Num Ticks = " << ticksAlive << std::endl;
 	//reset the sweepers positions
 	m_vPosition = SVector2D<double>((RandFloat() * CParams::WindowWidth), 
 					                (RandFloat() * CParams::WindowHeight));
@@ -32,7 +80,7 @@ void CContMinesweeper::Reset()
 	m_dRotation = RandFloat()*CParams::dTwoPi;
 
 
-
+	ticksAlive = 0;
 	return;
 }
 //---------------------WorldTransform--------------------------------
@@ -72,6 +120,8 @@ void CContMinesweeper::WorldTransform(vector<SPoint> &sweeper)
 //-----------------------------------------------------------------------
 bool CContMinesweeper::Update(vector<CContCollisionObject*> &objects)
 {
+	if (!m_bDead)
+		++ticksAlive;
 	//update Look At 
 	m_vLookAt.x = cos(m_dRotation);
 	m_vLookAt.y = sin(m_dRotation);
@@ -211,13 +261,15 @@ int CContMinesweeper::CheckForObject(vector<CContCollisionObject*> &objects, dou
 void CContMinesweeper::setSpeed(double distance, int distanceMultiplier)
 {	
 	//std::cout << "speed =" << speed << std::endl;
-	m_dSpeed = (double(MAX_SPEED_IN_PIXELS)*distanceMultiplier)/ (max(CParams::WindowHeight, CParams::WindowWidth))*distance+0.4f;
+	//m_dSpeed = (double(MAX_SPEED_IN_PIXELS)*distanceMultiplier)/ (max(CParams::WindowHeight, CParams::WindowWidth))*distance+0.4f;
+	m_dSpeed = MAX_SPEED_IN_PIXELS;
 }
 
 void CContMinesweeper::setSpeed(double distance)
 {
 	//std::cout << "speed =" << speed << std::endl;
-	m_dSpeed = (MAX_SPEED_IN_PIXELS / (max(CParams::WindowHeight, CParams::WindowWidth)))*distance + 0.4f;
+	//m_dSpeed = (MAX_SPEED_IN_PIXELS / (max(CParams::WindowHeight, CParams::WindowWidth)))*distance + 0.4f;
+	m_dSpeed = MAX_SPEED_IN_PIXELS;
 }
 double CContMinesweeper::getSpeed() const
 {
@@ -257,5 +309,31 @@ void CContMinesweeper::turn(SPoint pt, double rate_factor, bool towards)
 		m_dRotation = (abs(1 - dot_aclockW) < abs(1 - dot_clockW)) ? aclockRotRads : clockRotRads;
 	else
 		m_dRotation = (abs(1 - dot_aclockW) < abs(1 - dot_clockW)) ? clockRotRads : aclockRotRads;
+}
+
+CNeuralNet CContMinesweeper::getNeuralNet(){
+	return neuralNetwork;
+}
+
+int CContMinesweeper::getNumTicksAlive()const{
+	return ticksAlive;
+}
+
+void CContMinesweeper::setGenome(vector<double> newGenome){
+	std::cout << "setting new genome" << std::endl;
+	genome = newGenome;
+	uint count = 0;
+	for (uint i = 0; i < HIDDEN_SIZE; ++i){
+		for (uint j = 0; j < INPUT_SIZE; ++j){
+			neuralNetwork.getHiddenNodes()[i].setWeight(j, genome[count]);
+			++count;
+		}
+	}
+
+	for (uint i = 0; i < OUTPUT_SIZE; ++i){
+		for (uint j = 0; j < HIDDEN_SIZE; ++j){
+			neuralNetwork.getOutputNodes()[i].setWeight(j, genome[count]);
+		}
+	}
 }
 

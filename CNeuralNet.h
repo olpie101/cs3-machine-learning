@@ -47,6 +47,8 @@ public:
 	virtual ~CNeuralNet();
 	bool checkMSE();
 	void printAllMSEs();
+	vector<Node> getHiddenNodes();
+	vector<Node> getOutputNodes();
 };
 
 #endif /* CNEURALNET_H_ */

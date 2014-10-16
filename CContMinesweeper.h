@@ -18,8 +18,12 @@
 #include "CParams.h"
 #include "CContCollisionObject.h"
 #include "CMinesweeper.h"
+#include "CNeuralNet.h"
 #define MAX_TURNING_RATE_IN_DEGREES 2.0
 #define MAX_SPEED_IN_PIXELS 2.0
+#define INPUT_SIZE 2
+#define HIDDEN_SIZE 5
+#define OUTPUT_SIZE 2
 using namespace std;
 
 
@@ -39,6 +43,9 @@ private:
 	double			m_dSpeed;
 	//sets the internal closest object variables for the 3 types of objects
 	void GetClosestObjects(vector<CContCollisionObject*> &objects);
+	int ticksAlive;
+	CNeuralNet neuralNetwork;
+	vector<double> genome;
 public:
 	
 	void setSpeed(double speed, int distanceMultipler);
@@ -46,6 +53,7 @@ public:
 	double getSpeed() const;
 	SVector2D<double> getLookAt(void) const;
 	CContMinesweeper();
+	CContMinesweeper(vector<double> offspringGenome);
 	
 	//updates the information from the sweepers enviroment
 	bool			Update(vector<CContCollisionObject*> &objects);
@@ -64,6 +72,11 @@ public:
 	
 	//turs towards/away from the specified point at a specified rate
 	void turn(SPoint pt, double rate_factor, bool towards = true);
+	CNeuralNet getNeuralNet();
+	int getNumTicksAlive()const;
+	const int genomeSize = INPUT_SIZE*HIDDEN_SIZE*OUTPUT_SIZE;
+	vector<double> getGenome()const { return genome; }
+	void setGenome(vector<double> newGenome);
 };
 
 

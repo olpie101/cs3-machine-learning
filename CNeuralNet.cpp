@@ -22,7 +22,8 @@
  and output layers.
 */
 CNeuralNet::CNeuralNet(uint inputLayerSize, uint hiddenLayerSize, uint outputLayerSize, double lRate, double mse_cutoff):
-inputLayerSize(inputLayerSize), hiddenLayerSize(hiddenLayerSize), outputLayerSize(outputLayerSize), learningRate(lRate), mseCutOff(mse_cutoff)
+inputLayerSize(inputLayerSize), hiddenLayerSize(hiddenLayerSize), outputLayerSize(outputLayerSize),
+learningRate(lRate), mseCutOff(mse_cutoff), actualOutput(1)
 	//you probably want to use an initializer list here
 {	
 	std::cout << "inside neuro construct, LR= " << learningRate << std::endl;
@@ -73,7 +74,7 @@ void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
 	}
 
 	//std::cout << "onto output layer" << std::endl;
-
+	std::vector<double> output;
 	for (uint i = 0; i < outputNodes.size(); ++i){
 		for (uint j = 0; j < hiddenNodes.size(); ++j){
 			outputNodes[i].setInput(j, hiddenNodes[j].getOutput());
@@ -83,9 +84,12 @@ void CNeuralNet::feedForward(const std::vector<double> & const inputs) {
 		//std::cout << "inside feed forward2 " << i + 1 << " => " << actualOutput[outputIndex].size() << std::endl;
 		//std::cout << "actualOutput[0]Size = " << actualOutput[outputIndex].size() << std::endl;
 		//TODO allocate space beforehand in the train method
-		actualOutput[outputIndex][i] = outputNodes[i].getOutput();
+
+		
+		output.push_back(outputNodes[i].getOutput());
 		//std::cout << "OI= " << outputIndex << ", output => " << actualOutput[outputIndex].back() << " vs " << outputNodes[i].getOutput() << std::endl;
 	}
+	actualOutput[0] = output;
 }
 /**
  This is the actual back propagation part of the back propagation algorithm
@@ -229,7 +233,7 @@ Once our network is trained we can simply feed it some input though the feed for
 method and take the maximum index value as the classification
 */
 uint CNeuralNet::classify(const std::vector<double> & const input){
-	outputIndex = actualOutput.size() - 1;
+	outputIndex = 0; // actualOutput.size() - 1;
 	feedForward(input);
 	uint maxIndex = 0;
 	double maxValue = -DBL_MAX;
@@ -288,3 +292,6 @@ void CNeuralNet::printAllMSEs(){
 	}
 	std::cout << "mse avg = " << (sum / desiredOutput.size()) << std::endl;
 }
+
+vector<Node> CNeuralNet::getHiddenNodes(){ return hiddenNodes; }
+vector<Node> CNeuralNet::getOutputNodes(){ return outputNodes; }

@@ -30,6 +30,7 @@ public:
 	double Node::getInput(uint index);
 	double getOutput();
 	double getWeight(uint index);
+	void setWeight(uint index, double value);
 	void adjustWeight(uint index, double value);
 	uint getNumberOfWeights();
 	void printStats();

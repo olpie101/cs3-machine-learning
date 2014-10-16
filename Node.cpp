@@ -83,6 +83,10 @@ double Node::getWeight(uint index){
 	return weights[index];
 }
 
+void Node::setWeight(uint index, double value){
+	weights[index] = value;
+}
+
 void Node::adjustWeight(uint index, double value){
 	//std::cout << "weight " << index << " before = " << weights[index] << ", delta = " << deltaWeight << std::endl;
 	weights[index] += value;
