@@ -2,7 +2,7 @@
 
 Machine Learning assignment for 3rd year
 
-### What is this repository for? ###
+### Overview ###
 
 * Visual Studio project
 * Implements back propagation, Q-learning and evolutionary learning
